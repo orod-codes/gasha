@@ -1,0 +1,394 @@
+import React, { useState } from 'react';
+import { User } from '../../../types';
+import { Bell, Search, Settings, LogOut, User as UserIcon, Shield, Clock } from 'lucide-react';
+import ErrorBoundary from './components/ErrorBoundary';
+import Sidebar from './components/Sidebar';
+import AlertBanner from './components/AlertBanner';
+import OverviewStats from '../shared/OverviewStats';
+import Header from "../../layout/Header";
+import DashboardSection from './sections/DashboardSection';
+import RequestManagementSection from './sections/RequestManagementSection';
+import TeamManagementSection from './sections/TeamManagementSection';
+import ContentManagementSection from './sections/ContentManagementSection';
+import AnalyticsSection from './sections/AnalyticsSection';
+import NotificationsSection from './sections/NotificationsSection';
+import ActivityLogSection from './sections/ActivityLogSection';
+import SystemHealthSection from './sections/SystemHealthSection';
+import SettingsSection from './sections/SettingsSection';
+import QuickActionsSection from './sections/QuickActionsSection';
+import ViewRequestDetailsModal from './modals/ViewRequestDetailsModal';
+import AddTeamMemberModal from './modals/AddTeamMemberModal';
+import CreatePostModal from './modals/CreatePostModal';
+
+interface AdminDashboardProps {
+  user: User;
+}
+
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  
+  // Modal states
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [isViewRequestModalOpen, setIsViewRequestModalOpen] = useState(false);
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false);
+
+  const moduleRequests = [
+    {
+      id: 'REQ-001',
+      productName: 'GASHA Anti-Virus',
+      companyName: 'TechCorp Solutions',
+      contactEmail: 'admin@techcorp.com',
+      status: 'validated',
+      submittedDate: '2024-01-15',
+      marketingNotes: 'All information verified, company has 150 computers',
+      formData: {
+        totalComputers: 150,
+        windowsOS: 120,
+        linuxOS: 30,
+        contactPerson1: 'John Smith',
+        contactPerson2: 'Jane Doe'
+      }
+    },
+    {
+      id: 'REQ-002',
+      productName: 'GASHA WAF',
+      companyName: 'SecureBank Ltd',
+      contactEmail: 'security@securebank.com',
+      status: 'pending',
+      submittedDate: '2024-01-14',
+      marketingNotes: 'Waiting for additional server information',
+      formData: {
+        hasInternalWebsite: true,
+        serverOS: 'Ubuntu 20.04',
+        webServer: 'Nginx'
+      }
+    },
+    {
+      id: 'REQ-003',
+      productName: 'NISIR SIEM',
+      companyName: 'DataFlow Inc',
+      contactEmail: 'it@dataflow.com',
+      status: 'approved',
+      submittedDate: '2024-01-13',
+      adminNotes: 'Approved for enterprise deployment',
+      assignedTo: 'Technical Team Alpha'
+    }
+  ];
+
+  const teamMembers = [
+    { id: 1, name: 'Sarah Johnson', role: 'Marketing Lead', status: 'active', requests: 23 },
+    { id: 2, name: 'Mike Chen', role: 'Marketing Specialist', status: 'active', requests: 18 },
+    { id: 3, name: 'Alex Rodriguez', role: 'Technical Lead', status: 'active', tasks: 12 },
+    { id: 4, name: 'Emma Wilson', role: 'Developer', status: 'active', content: 8 }
+  ];
+
+  const blogPosts = [
+    {
+      id: 1,
+      title: 'GASHA Anti-Virus Update 2024.1',
+      author: 'Emma Wilson',
+      status: 'pending',
+      type: 'blog',
+      createdDate: '2024-01-15',
+      content: 'New features and security improvements...'
+    },
+    {
+      id: 2,
+      title: 'Security Best Practices Guide',
+      author: 'Alex Rodriguez',
+      status: 'published',
+      type: 'news',
+      createdDate: '2024-01-12',
+      content: 'Essential security practices for enterprises...'
+    }
+  ];
+
+
+  // Handler functions
+  const handleApproveRequest = (requestId: string) => {
+    console.log('Approving request:', requestId);
+    // Implementation for approving request
+  };
+
+  const handleRejectRequest = (requestId: string) => {
+    console.log('Rejecting request:', requestId);
+    // Implementation for rejecting request
+  };
+
+  const handleViewRequest = (request: any) => {
+    setSelectedRequest(request);
+    setIsViewRequestModalOpen(true);
+  };
+
+  const handleAddMember = (memberData: any) => {
+    console.log('Adding team member:', memberData);
+    // Implementation for adding team member
+  };
+
+  const handleEditMember = (memberId: number) => {
+    console.log('Editing team member:', memberId);
+    // Implementation for editing team member
+  };
+
+  const handleViewMember = (memberId: number) => {
+    console.log('Viewing team member:', memberId);
+    // Implementation for viewing team member
+  };
+
+  const handleCreatePost = (postData: any) => {
+    console.log('Creating post:', postData);
+    // Implementation for creating post
+  };
+
+  const handleViewPost = (postId: number) => {
+    console.log('Viewing post:', postId);
+    // Implementation for viewing post
+  };
+
+  const handleEditPost = (postId: number) => {
+    console.log('Editing post:', postId);
+    // Implementation for editing post
+  };
+
+  const handleApprovePost = (postId: number) => {
+    console.log('Approving post:', postId);
+    // Implementation for approving post
+  };
+
+  const handleRejectPost = (postId: number) => {
+    console.log('Rejecting post:', postId);
+    // Implementation for rejecting post
+  };
+
+  const handleExportReport = () => {
+    console.log('Exporting report');
+    // Implementation for exporting report
+  };
+
+  // New handler functions for additional sections
+  const handleMarkAsRead = (notificationId: string) => {
+    console.log('Marking notification as read:', notificationId);
+    // Implementation for marking notification as read
+  };
+
+  const handleMarkAllAsRead = () => {
+    console.log('Marking all notifications as read');
+    // Implementation for marking all notifications as read
+  };
+
+  const handleDeleteNotification = (notificationId: string) => {
+    console.log('Deleting notification:', notificationId);
+    // Implementation for deleting notification
+  };
+
+  const handleExportLogs = () => {
+    console.log('Exporting activity logs');
+    // Implementation for exporting logs
+  };
+
+  const handleViewDetails = (logId: string) => {
+    console.log('Viewing log details:', logId);
+    // Implementation for viewing log details
+  };
+
+  const handleRefreshMetrics = () => {
+    console.log('Refreshing system metrics');
+    // Implementation for refreshing metrics
+  };
+
+  const handleRestartService = (serviceName: string) => {
+    console.log('Restarting service:', serviceName);
+    // Implementation for restarting service
+  };
+
+  const handleSaveSettings = (settings: any) => {
+    console.log('Saving settings:', settings);
+    // Implementation for saving settings
+  };
+
+  // Dashboard handlers
+  const handleRefreshData = () => {
+    console.log('Refreshing dashboard data');
+    // Implementation for refreshing dashboard data
+  };
+
+  const handleViewDashboardDetails = (type: string) => {
+    console.log('Viewing details for:', type);
+    // Implementation for viewing details
+  };
+
+  // Quick Actions handlers
+  const handleCreateRequest = () => {
+    console.log('Creating new request');
+    // Implementation for creating request
+  };
+
+  const handleAddTeamMemberQuick = () => {
+    setIsAddMemberModalOpen(true);
+  };
+
+  const handleCreatePostQuick = () => {
+    setIsCreatePostModalOpen(true);
+  };
+
+  const handleExportData = () => {
+    console.log('Exporting data');
+    // Implementation for exporting data
+  };
+
+  const handleSendNotification = () => {
+    console.log('Sending notification');
+    // Implementation for sending notification
+  };
+
+  const handleRunBackup = () => {
+    console.log('Running backup');
+    // Implementation for running backup
+  };
+
+  const handleRefreshSystem = () => {
+    console.log('Refreshing system');
+    // Implementation for refreshing system
+  };
+
+  const handleGenerateReport = () => {
+    console.log('Generating report');
+    // Implementation for generating report
+  };
+
+  // Alert management
+  const handleAlertDismiss = (alertId: string) => {
+    console.log('Alert dismissed:', alertId);
+    // Implementation for dismissing alert
+    // This could update state, send to backend, etc.
+  };
+
+
+  return (
+    <>
+      <Header user={user} onLogin={() => {}} onLogout={() => {}} />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 flex">
+        <ErrorBoundary>
+          <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+          <div className="flex-1 flex flex-col overflow-hidden">
+          
+          {/* Real-time Alert Banner */}
+          <AlertBanner onDismiss={handleAlertDismiss} />
+          
+          {/* Main Content */}
+          <div className="flex-1 overflow-auto">
+            <div className="p-8">
+            {/* Tab Content */}
+            {activeTab === 'dashboard' && (
+              <DashboardSection
+                user={user}
+                onRefreshData={handleRefreshData}
+                onViewDetails={handleViewDashboardDetails}
+              />
+            )}
+            {activeTab === 'quick-actions' && (
+              <QuickActionsSection
+                onCreateRequest={handleCreateRequest}
+                onAddTeamMember={handleAddTeamMemberQuick}
+                onCreatePost={handleCreatePostQuick}
+                onExportData={handleExportData}
+                onSendNotification={handleSendNotification}
+                onRunBackup={handleRunBackup}
+                onRefreshSystem={handleRefreshSystem}
+                onGenerateReport={handleGenerateReport}
+              />
+            )}
+            {activeTab === 'requests' && (
+              <RequestManagementSection
+                requests={moduleRequests}
+                onApproveRequest={handleApproveRequest}
+                onRejectRequest={handleRejectRequest}
+                onViewRequest={handleViewRequest}
+              />
+            )}
+            {activeTab === 'team' && (
+              <TeamManagementSection
+                teamMembers={teamMembers}
+                onAddMember={() => setIsAddMemberModalOpen(true)}
+                onEditMember={handleEditMember}
+                onViewMember={handleViewMember}
+              />
+            )}
+            {activeTab === 'content' && (
+              <ContentManagementSection
+                blogPosts={blogPosts}
+                onCreatePost={() => setIsCreatePostModalOpen(true)}
+                onViewPost={handleViewPost}
+                onEditPost={handleEditPost}
+                onApprovePost={handleApprovePost}
+                onRejectPost={handleRejectPost}
+              />
+            )}
+            {activeTab === 'analytics' && (
+              <AnalyticsSection
+                totalRequests={68}
+                completedRequests={45}
+                inProgressRequests={20}
+                contentPosts={15}
+                onExportReport={handleExportReport}
+              />
+            )}
+            {activeTab === 'notifications' && (
+              <NotificationsSection
+                onMarkAsRead={handleMarkAsRead}
+                onMarkAllAsRead={handleMarkAllAsRead}
+                onDeleteNotification={handleDeleteNotification}
+              />
+            )}
+            {activeTab === 'activity' && (
+              <ActivityLogSection
+                onExportLogs={handleExportLogs}
+                onViewDetails={handleViewDetails}
+              />
+            )}
+            {activeTab === 'system' && (
+              <SystemHealthSection
+                onRefreshMetrics={handleRefreshMetrics}
+                onRestartService={handleRestartService}
+              />
+            )}
+            {activeTab === 'settings' && (
+              <SettingsSection
+                onSaveSettings={handleSaveSettings}
+              />
+            )}
+            </div>
+          </div>
+        </div>
+
+        </ErrorBoundary>
+        </div>
+
+        </>
+        <ErrorBoundary>
+        <ViewRequestDetailsModal
+          request={selectedRequest}
+          isOpen={isViewRequestModalOpen}
+          onClose={() => setIsViewRequestModalOpen(false)}
+        />
+        
+        <AddTeamMemberModal
+          isOpen={isAddMemberModalOpen}
+          onClose={() => setIsAddMemberModalOpen(false)}
+          onAddMember={handleAddMember}
+        />
+        
+        <CreatePostModal
+          isOpen={isCreatePostModalOpen}
+          onClose={() => setIsCreatePostModalOpen(false)}
+          onCreatePost={handleCreatePost}
+        />
+        </ErrorBoundary>
+          </div>
+      </div>
+    </>
+  );
+};
+
+export default AdminDashboard;

@@ -4,18 +4,41 @@ import { products } from '../../data/products';
 
 const ProductsGrid: React.FC = () => {
   return (
-    <section id="products" className="py-24 relative overflow-hidden content-over-video">
-      {/* Glass morphism overlay for better content visibility */}
-      <div className="absolute inset-0 glass-over-video"></div>
+    <section id="products" className="py-24 bg-gradient-to-br from-black via-slate-950 to-black relative overflow-hidden">
+      {/* Modern Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/3 via-transparent to-slate-600/3"></div>
       
-      {/* Subtle floating elements for depth */}
-      <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-blue-500/3 to-cyan-500/3 rounded-full blur-3xl float-slow"></div>
-      <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-slate-500/2 to-blue-500/2 rounded-full blur-3xl float-delayed"></div>
+      {/* Animated Grid Pattern */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="w-full h-full" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M0 0h80v1H0zm0 8h80v1H0zm0 8h80v1H0zm0 8h80v1H0zm0 8h80v1H0zm0 8h80v1H0zm0 8h80v1H0zm0 8h80v1H0zm0 8h80v1H0zm0 8h80v1H0zM0 0v80h1V0zm8 0v80h1V0zm8 0v80h1V0zm8 0v80h1V0zm8 0v80h1V0zm8 0v80h1V0zm8 0v80h1V0zm8 0v80h1V0zm8 0v80h1V0zm8 0v80h1V0z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundRepeat: 'repeat'
+        }}></div>
+      </div>
       
-      {/* Minimal animated lines for tech aesthetic */}
-      <div className="absolute inset-0 overflow-hidden opacity-30">
-        <div className="absolute top-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-400/20 to-transparent animate-line-glow"></div>
-        <div className="absolute top-3/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-400/15 to-transparent animate-line-glow" style={{animationDelay: '2s'}}></div>
+      {/* Floating Background Elements */}
+      <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-blue-500/5 to-cyan-500/5 rounded-full blur-3xl float-slow"></div>
+      <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-slate-500/4 to-blue-500/4 rounded-full blur-3xl float-delayed"></div>
+      <div className="absolute top-40 right-20 w-64 h-64 bg-gradient-to-r from-blue-400/3 to-slate-400/3 rounded-full blur-2xl float-fast"></div>
+      <div className="absolute bottom-40 left-20 w-72 h-72 bg-gradient-to-r from-slate-500/2 to-blue-500/2 rounded-full blur-2xl bounce-gentle"></div>
+      
+      {/* Animated Background Lines */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Horizontal Lines */}
+        <div className="absolute top-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-400/10 to-transparent animate-line-glow"></div>
+        <div className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-400/8 to-transparent animate-line-glow" style={{animationDelay: '1s'}}></div>
+        <div className="absolute top-3/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-300/10 to-transparent animate-line-glow" style={{animationDelay: '2s'}}></div>
+        
+        {/* Vertical Lines */}
+        <div className="absolute left-1/4 top-0 w-px h-full bg-gradient-to-b from-transparent via-blue-400/8 to-transparent animate-line-glow" style={{animationDelay: '0.5s'}}></div>
+        <div className="absolute left-1/2 top-0 w-px h-full bg-gradient-to-b from-transparent via-cyan-400/5 to-transparent animate-line-glow" style={{animationDelay: '1.5s'}}></div>
+        <div className="absolute left-3/4 top-0 w-px h-full bg-gradient-to-b from-transparent via-blue-300/8 to-transparent animate-line-glow" style={{animationDelay: '2.5s'}}></div>
+        
+        {/* Diagonal Lines */}
+        <div className="absolute top-0 left-0 w-full h-full">
+          <div className="absolute top-1/3 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-400/4 to-transparent transform rotate-12 animate-line-sweep" style={{animationDelay: '0.8s'}}></div>
+          <div className="absolute top-2/3 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-400/5 to-transparent transform -rotate-12 animate-line-sweep" style={{animationDelay: '1.8s'}}></div>
+        </div>
       </div>
       
       
@@ -34,7 +57,7 @@ const ProductsGrid: React.FC = () => {
             </span>
           </h2>
           
-          <p className="text-2xl text-slate-200 max-w-5xl mx-auto leading-relxed font-light mb-16">
+          <p className="text-2xl text-slate-200 max-w-5xl mx-auto leading-relaxed font-light mb-16">
             Next-generation security platform delivering 
             <span className="text-blue-400 font-semibold"> enterprise-grade protection</span> across your entire infrastructure
           </p>

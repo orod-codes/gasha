@@ -27,25 +27,45 @@ function App() {
   // Two-port setup: 5173 for landing, 5174 for login modal
   const loginPorts = useMemo(() => new Set(['5174']), []);
   const landingPorts = useMemo(() => new Set(['5173', '4173']), []);
+  const isProd = import.meta.env.PROD;
 
   // If on a login-designated port, prompt login modal only when no user is logged in
   useEffect(() => {
+    if (isProd) {
+      // Production: path-based behavior
+      const path = window.location.pathname || '/';
+      const onLoginPath = path.startsWith('/login');
+      if (onLoginPath && !user && !isLoginModalOpen) {
+        setIsLoginModalOpen(true);
+      }
+      return;
+    }
+    // Development: port-based behavior
     const port = window.location.port || '';
     const isLoginPort = loginPorts.has(port);
     if (isLoginPort && !user && !isLoginModalOpen) {
       setIsLoginModalOpen(true);
     }
-  }, [loginPorts, isLoginModalOpen, user]);
+  }, [loginPorts, isLoginModalOpen, user, isProd]);
 
   // If on a landing-designated port, always show landing even if a user exists
   useEffect(() => {
+    if (isProd) {
+      const path = window.location.pathname || '/';
+      const onLandingPath = path === '/' || path === '';
+      if (onLandingPath && currentView !== 'landing') {
+        setCurrentView('landing');
+        if (isLoginModalOpen) setIsLoginModalOpen(false);
+      }
+      return;
+    }
     const port = window.location.port || '';
     const isLandingPort = landingPorts.has(port);
     if (isLandingPort && currentView !== 'landing') {
       setCurrentView('landing');
       if (isLoginModalOpen) setIsLoginModalOpen(false);
     }
-  }, [landingPorts, currentView, isLoginModalOpen]);
+  }, [landingPorts, currentView, isLoginModalOpen, isProd]);
 
   // Effect to handle authentication state changes
   useEffect(() => {

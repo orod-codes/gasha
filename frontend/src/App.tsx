@@ -34,7 +34,7 @@ function App() {
     if (isProd) {
       // Production: path-based behavior
       const path = window.location.pathname || '/';
-      const onLoginPath = path.startsWith('/login');
+      const onLoginPath = path.startsWith('/5174');
       if (onLoginPath && !user && !isLoginModalOpen) {
         setIsLoginModalOpen(true);
       }

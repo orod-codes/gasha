@@ -99,7 +99,7 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
               <option value="">Select a role</option>
               <option value="Marketing Lead">Marketing Lead</option>
               <option value="Marketing Specialist">Marketing Specialist</option>
-              <option value="Technical Lead">Technical Lead</option>
+              
               <option value="Developer">Developer</option>
               <option value="Content Creator">Content Creator</option>
               <option value="Support Specialist">Support Specialist</option>

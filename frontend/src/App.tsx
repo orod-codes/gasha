@@ -6,9 +6,7 @@ import ProductsGrid from './components/products/ProductsGrid';
 import ContactSection from './components/contact/ContactSection';
 import Footer from './components/layout/Footer';
 import LoginModal from './components/auth/LoginModal';
-import { SuperAdminDashboard, CombinedAdminTechnicalDashboard } from './components/dashboard';
-import MarketingDashboard from './components/dashboard/MarketingDashboard';
-import DeveloperDashboard from './components/dashboard/DeveloperDashboard';
+import { SuperAdminDashboard, CombinedAdminTechnicalDashboard, MarketingDashboard, DeveloperDashboard } from './components/dashboard';
 import { ChatbotProvider } from './components/chatbot/ChatbotProvider';
 import Chatbot from './components/chatbot/Chatbot';
 

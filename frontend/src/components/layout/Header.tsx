@@ -12,6 +12,58 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProductsDropdownOpen, setIsProductsDropdownOpen] = useState(false);
   const [dropdownTimeout, setDropdownTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Array<{
+    id: string;
+    title: string;
+    message: string;
+    read: boolean;
+    timestamp: Date;
+    type: 'content' | 'campaign' | 'approval' | 'urgent';
+  }>>([
+    {
+      id: 'n-1',
+      title: 'Blog Post Pending Approval',
+      message: 'New blog post "Cybersecurity Best Practices" is waiting for your review.',
+      read: false,
+      timestamp: new Date(Date.now() - 15 * 60 * 1000), // 15 minutes ago
+      type: 'approval'
+    },
+    {
+      id: 'n-2',
+      title: 'Social Media Content Ready',
+      message: 'LinkedIn post about GASHA Antivirus features is ready for approval.',
+      read: false,
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+      type: 'content'
+    },
+    {
+      id: 'n-3',
+      title: 'Email Campaign Needs Review',
+      message: 'Q1 Product Launch email template requires final approval before sending.',
+      read: true,
+      timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
+      type: 'campaign'
+    },
+    {
+      id: 'n-4',
+      title: 'Urgent: Content Deadline',
+      message: 'Website banner for security awareness month needs approval by EOD.',
+      read: false,
+      timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
+      type: 'urgent'
+    },
+    {
+      id: 'n-5',
+      title: 'Video Content Approved',
+      message: 'Product demo video has been approved and is ready for publishing.',
+      read: true,
+      timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
+      type: 'content'
+    }
+  ]);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   // Function to handle logo download
   const handleLogoDownload = () => {
@@ -40,6 +92,22 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
       setIsProductsDropdownOpen(false);
     }, 150); // 150ms delay before closing
     setDropdownTimeout(timeout);
+  };
+
+  const toggleNotifications = () => {
+    setIsNotificationsOpen(prev => !prev);
+  };
+
+  const markAsRead = (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const markAllAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const deleteNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
   return (
@@ -139,10 +207,86 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
                 )}
                 
                 {user.role === 'marketing' && (
-                  <>
-                    <a href="#mkt-campaigns" className="text-slate-300 hover:text-white font-medium">Campaigns</a>
-                    <a href="#mkt-leads" className="text-slate-300 hover:text-white font-medium">Leads</a>
-                  </>
+                  <div className="relative">
+                    <button
+                      onClick={toggleNotifications}
+                      className="relative inline-flex items-center justify-center w-9 h-9 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/50"
+                      aria-label="Content Approval Notifications"
+                      title="Content Approval Notifications"
+                    >
+                      <Bell size={18} />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] leading-[18px] text-center">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </button>
+
+                    {isNotificationsOpen && (
+                      <div className="absolute right-0 mt-2 w-80 bg-black border border-slate-800 rounded-xl shadow-2xl z-50">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
+                          <span className="text-sm font-semibold text-slate-200">Content Approvals</span>
+                          <button
+                            onClick={markAllAsRead}
+                            className="text-xs text-blue-400 hover:text-blue-300"
+                          >
+                            Mark all as read
+                          </button>
+                        </div>
+                        <div className="max-h-80 overflow-auto divide-y divide-slate-800">
+                          {notifications.length === 0 ? (
+                            <div className="px-4 py-6 text-center text-slate-400 text-sm">No pending approvals</div>
+                          ) : (
+                            notifications.map(n => (
+                              <div key={n.id} className={`px-4 py-3 flex items-start space-x-3 ${n.read ? 'bg-transparent' : 'bg-slate-900/40'}`}>
+                                <div className={`w-2 h-2 mt-2 rounded-full ${
+                                  n.type === 'urgent' ? 'bg-red-500' : 
+                                  n.type === 'approval' ? 'bg-orange-500' : 
+                                  n.type === 'campaign' ? 'bg-blue-500' : 
+                                  n.read ? 'bg-slate-600' : 'bg-green-500'
+                                }`}></div>
+                                <div className="flex-1">
+                                  <div className="flex items-center justify-between">
+                                    <span className={`text-sm font-medium ${n.type === 'urgent' ? 'text-red-300' : 'text-slate-200'}`}>
+                                      {n.title}
+                                    </span>
+                                    <span className="text-[10px] text-slate-500">
+                                      {n.timestamp.toLocaleTimeString()}
+                                    </span>
+                                  </div>
+                                  <p className="text-xs text-slate-400 mt-1">{n.message}</p>
+                                  <div className="flex items-center justify-between mt-2">
+                                    {!n.read && (
+                                      <button
+                                        onClick={() => markAsRead(n.id)}
+                                        className="text-xs text-blue-400 hover:text-blue-300"
+                                      >
+                                        Mark as read
+                                      </button>
+                                    )}
+                                    <span className={`text-[10px] px-2 py-1 rounded-full ${
+                                      n.type === 'urgent' ? 'bg-red-500/20 text-red-300' :
+                                      n.type === 'approval' ? 'bg-orange-500/20 text-orange-300' :
+                                      n.type === 'campaign' ? 'bg-blue-500/20 text-blue-300' :
+                                      'bg-green-500/20 text-green-300'
+                                    }`}>
+                                      {n.type}
+                                    </span>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => deleteNotification(n.id)}
+                                  className="text-xs text-slate-500 hover:text-slate-300"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
                 {user.role === 'technical' && (
                   <>
@@ -159,17 +303,67 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
 
                 {/* Dashboard/Home button removed per port-login change */}
                 {user.role === 'admin' && (
-                  <>
-                  
-                    <a
-                      href="#admin-notifications"
+                  <div className="relative">
+                    <button
+                      onClick={toggleNotifications}
                       className="relative inline-flex items-center justify-center w-9 h-9 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/50"
                       aria-label="Notifications"
                       title="Notifications"
                     >
                       <Bell size={18} />
-                    </a>
-                  </>
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] leading-[18px] text-center">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </button>
+
+                    {isNotificationsOpen && (
+                      <div className="absolute right-0 mt-2 w-80 bg-black border border-slate-800 rounded-xl shadow-2xl z-50">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
+                          <span className="text-sm font-semibold text-slate-200">Notifications</span>
+                          <button
+                            onClick={markAllAsRead}
+                            className="text-xs text-blue-400 hover:text-blue-300"
+                          >
+                            Mark all as read
+                          </button>
+                        </div>
+                        <div className="max-h-80 overflow-auto divide-y divide-slate-800">
+                          {notifications.length === 0 ? (
+                            <div className="px-4 py-6 text-center text-slate-400 text-sm">No notifications</div>
+                          ) : (
+                            notifications.map(n => (
+                              <div key={n.id} className={`px-4 py-3 flex items-start space-x-3 ${n.read ? 'bg-transparent' : 'bg-slate-900/40'}`}>
+                                <div className={`w-2 h-2 mt-2 rounded-full ${n.read ? 'bg-slate-600' : 'bg-blue-500'}`}></div>
+                                <div className="flex-1">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-slate-200">{n.title}</span>
+                                    <span className="text-[10px] text-slate-500">{n.timestamp.toLocaleTimeString()}</span>
+                                  </div>
+                                  <p className="text-xs text-slate-400 mt-1">{n.message}</p>
+                                  {!n.read && (
+                                    <button
+                                      onClick={() => markAsRead(n.id)}
+                                      className="mt-2 text-xs text-blue-400 hover:text-blue-300"
+                                    >
+                                      Mark as read
+                                    </button>
+                                  )}
+                                </div>
+                                <button
+                                  onClick={() => deleteNotification(n.id)}
+                                  className="text-xs text-slate-500 hover:text-slate-300"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
                 <div className="flex items-center space-x-3 px-4 py-2 bg-transparent rounded-xl border border-slate-300/20 backdrop-blur-none">
                   <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
@@ -257,14 +451,24 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
                       <>
                         <a href="#mkt-campaigns" className="py-2 px-4 text-slate-300 hover:text-white rounded-lg hover:bg-slate-800/50">Campaigns</a>
                         <a href="#mkt-leads" className="py-2 px-4 text-slate-300 hover:text-white rounded-lg hover:bg-slate-800/50">Leads</a>
+                        <a href="#mkt-content" className="py-2 px-4 text-slate-300 hover:text-white rounded-lg hover:bg-slate-800/50">Content</a>
+                        <a
+                          href="#mkt-notifications"
+                          className="inline-flex items-center gap-2 py-2 px-4 text-slate-300 hover:text-white rounded-lg hover:bg-slate-800/50"
+                          aria-label="Content Approval Notifications"
+                          title="Content Approval Notifications"
+                        >
+                          <Bell size={16} />
+                          <span>Approvals</span>
+                          {unreadCount > 0 && (
+                            <span className="min-w-[16px] h-[16px] px-1 rounded-full bg-red-500 text-white text-[10px] leading-[16px] text-center">
+                              {unreadCount}
+                            </span>
+                          )}
+                        </a>
                       </>
                     )}
-                    {user.role === 'technical' && (
-                      <>
-                        <a href="#tech-issues" className="py-2 px-4 text-slate-300 hover:text-white rounded-lg hover:bg-slate-800/50">Issues</a>
-                        <a href="#tech-deploys" className="py-2 px-4 text-slate-300 hover:text-white rounded-lg hover:bg-slate-800/50">Deploys</a>
-                      </>
-                    )}
+                    
                     {user.role === 'developer' && (
                       <>
                         <a href="#dev-tasks" className="py-2 px-4 text-slate-300 hover:text-white rounded-lg hover:bg-slate-800/50">Tasks</a>

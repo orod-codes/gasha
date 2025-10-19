@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { User } from '../../../types';
-import { Bell, Search, Settings, LogOut, User as UserIcon, Shield, Clock } from 'lucide-react';
+// Removed unused icon imports
 import ErrorBoundary from './components/ErrorBoundary';
 import Sidebar from './components/Sidebar';
 import AlertBanner from './components/AlertBanner';
-import OverviewStats from '../shared/OverviewStats';
 import Header from "../../layout/Header";
 import DashboardSection from './sections/DashboardSection';
 import RequestManagementSection from './sections/RequestManagementSection';
@@ -15,7 +14,6 @@ import NotificationsSection from './sections/NotificationsSection';
 import ActivityLogSection from './sections/ActivityLogSection';
 import SystemHealthSection from './sections/SystemHealthSection';
 import SettingsSection from './sections/SettingsSection';
-import QuickActionsSection from './sections/QuickActionsSection';
 import ViewRequestDetailsModal from './modals/ViewRequestDetailsModal';
 import AddTeamMemberModal from './modals/AddTeamMemberModal';
 import CreatePostModal from './modals/CreatePostModal';
@@ -213,49 +211,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     // Implementation for refreshing dashboard data
   };
 
-  const handleViewDashboardDetails = (type: string) => {
-    console.log('Viewing details for:', type);
-    // Implementation for viewing details
-  };
+  // Removed unused dashboard details handler
 
-  // Quick Actions handlers
-  const handleCreateRequest = () => {
-    console.log('Creating new request');
-    // Implementation for creating request
-  };
-
-  const handleAddTeamMemberQuick = () => {
-    setIsAddMemberModalOpen(true);
-  };
-
-  const handleCreatePostQuick = () => {
-    setIsCreatePostModalOpen(true);
-  };
-
-  const handleExportData = () => {
-    console.log('Exporting data');
-    // Implementation for exporting data
-  };
-
-  const handleSendNotification = () => {
-    console.log('Sending notification');
-    // Implementation for sending notification
-  };
-
-  const handleRunBackup = () => {
-    console.log('Running backup');
-    // Implementation for running backup
-  };
-
-  const handleRefreshSystem = () => {
-    console.log('Refreshing system');
-    // Implementation for refreshing system
-  };
-
-  const handleGenerateReport = () => {
-    console.log('Generating report');
-    // Implementation for generating report
-  };
+  // Removed Quick Actions handlers (no longer used)
 
   // Alert management
   const handleAlertDismiss = (alertId: string) => {
@@ -267,7 +225,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
 
   return (
     <>
-      <Header user={user} onLogin={() => {}} onLogout={() => {}} />
+      <Header user={user} onLogout={() => {}} />
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 flex">
         <ErrorBoundary>
           <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
@@ -284,21 +242,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
               <DashboardSection
                 user={user}
                 onRefreshData={handleRefreshData}
-                onViewDetails={handleViewDashboardDetails}
               />
             )}
-            {activeTab === 'quick-actions' && (
-              <QuickActionsSection
-                onCreateRequest={handleCreateRequest}
-                onAddTeamMember={handleAddTeamMemberQuick}
-                onCreatePost={handleCreatePostQuick}
-                onExportData={handleExportData}
-                onSendNotification={handleSendNotification}
-                onRunBackup={handleRunBackup}
-                onRefreshSystem={handleRefreshSystem}
-                onGenerateReport={handleGenerateReport}
-              />
-            )}
+            {/* Quick Actions removed */}
             {activeTab === 'requests' && (
               <RequestManagementSection
                 requests={moduleRequests}

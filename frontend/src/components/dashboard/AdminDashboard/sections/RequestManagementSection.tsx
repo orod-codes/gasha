@@ -21,13 +21,15 @@ interface RequestManagementSectionProps {
   onApproveRequest: (requestId: string) => void;
   onRejectRequest: (requestId: string) => void;
   onViewRequest: (request: Request) => void;
+  onAssignToTech: (requestId: string) => void;
 }
 
 const RequestManagementSection: React.FC<RequestManagementSectionProps> = ({
   requests,
   onApproveRequest,
   onRejectRequest,
-  onViewRequest
+  onViewRequest,
+  onAssignToTech
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -208,7 +210,7 @@ const RequestManagementSection: React.FC<RequestManagementSectionProps> = ({
                 )}
 
                 {request.status === 'approved' && (
-                  <Button variant="secondary" size="sm" className="w-full">
+                  <Button variant="secondary" size="sm" className="w-full" onClick={() => onAssignToTech(request.id)}>
                     <Send size={16} className="mr-2" />
                     Assign to Tech
                   </Button>

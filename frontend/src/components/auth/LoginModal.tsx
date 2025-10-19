@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { X, User, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import Button from '../ui/Button';
 import { User as UserType } from '../../types';
+import { authenticateUser, LoginCredentials } from '../../api/auth';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -14,49 +15,40 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin }) => 
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   if (!isOpen) return null;
+
+  const clearError = () => {
+    if (error) setError('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
-    // Simulate authentication
-    setTimeout(() => {
-      // Determine user role and module based on email
-      let role = 'admin';
-      let module = 'gasha-antivirus';
-      let name = 'Mister X';
-
-      if (email.includes('superadmin')) {
-        role = 'super-admin';
-        name = 'Super Administrator';
-        module = '';
-      } else if (email.includes('marketing')) {
-        role = 'marketing';
-        name = 'Marketing Specialist';
-      } else if (email.includes('technical')) {
-        role = 'technical';
-        name = 'Technical Lead';
-      } else if (email.includes('developer')) {
-        role = 'developer';
-        name = 'Developer';
-      }
-
-      const userData: UserType = {
-        id: '1',
-        email,
-        name,
-        role: role as UserType['role'],
-        module: module || undefined,
-        createdAt: new Date().toISOString()
+    try {
+      const credentials: LoginCredentials = {
+        email: email.trim(),
+        password: password.trim()
       };
-      onLogin(userData);
-      onClose();
+
+      const authResult = await authenticateUser(credentials);
+
+      if (authResult.success && authResult.user) {
+        onLogin(authResult.user);
+        onClose();
+        setEmail('');
+        setPassword('');
+      } else {
+        setError(authResult.error || 'Authentication failed');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
       setLoading(false);
-      setEmail('');
-      setPassword('');
-    }, 1000);
+    }
   };
 
   return (
@@ -80,6 +72,13 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin }) => 
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center space-x-3">
+              <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
+              <p className="text-red-700 text-sm">{error}</p>
+            </div>
+          )}
+          
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Email Address
@@ -89,7 +88,10 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin }) => 
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  clearError();
+                }}
                 className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter your email"
                 required
@@ -106,7 +108,10 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin }) => 
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  clearError();
+                }}
                 className="w-full pl-10 pr-12 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter your password"
                 required
@@ -139,7 +144,6 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin }) => 
               <div>Super Admin: superadmin@securityservice.com</div>
               <div>Admin: admin@securityservice.com</div>
               <div>Marketing: marketing@securityservice.com</div>
-              <div>Technical: technical@securityservice.com</div>
               <div>Developer: developer@securityservice.com</div>
               <div>Password: demo123</div>
             </div>

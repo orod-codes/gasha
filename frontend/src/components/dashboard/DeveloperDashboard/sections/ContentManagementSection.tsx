@@ -1,15 +1,9 @@
 import React, { useState } from 'react';
-import { FileText, Eye, CreditCard as Edit, Plus, Clock, CheckCircle, Send, Save, Image, Settings } from 'lucide-react';
-import Card from '../ui/Card';
-import Button from '../ui/Button';
-import { User } from '../../types';
+import { FileText, Eye, CreditCard as Edit, Plus, Clock, CheckCircle, Send, Save, Image, Settings, Tag, Calendar } from 'lucide-react';
+import Card from '../../../ui/Card';
+import Button from '../../../ui/Button';
 
-interface DeveloperDashboardProps {
-  user: User;
-}
-
-const DeveloperDashboard: React.FC<DeveloperDashboardProps> = ({ user }) => {
-  const [activeTab, setActiveTab] = useState('content');
+const ContentManagementSection: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
 
   const contentPosts = [
@@ -79,7 +73,7 @@ const DeveloperDashboard: React.FC<DeveloperDashboardProps> = ({ user }) => {
     console.log('Submitting post for review:', postId);
   };
 
-  const renderContentManagement = () => (
+  return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-semibold text-slate-900">Content Management</h3>
@@ -292,199 +286,6 @@ const DeveloperDashboard: React.FC<DeveloperDashboardProps> = ({ user }) => {
       </div>
     </div>
   );
-
-  const renderBrandingManagement = () => (
-    <div className="space-y-6">
-      <h3 className="text-xl font-semibold text-slate-900">Module Branding & Assets</h3>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="p-6">
-          <h4 className="font-semibold text-slate-900 mb-4">Visual Assets</h4>
-          <div className="space-y-4">
-            <div className="p-4 border-2 border-dashed border-slate-300 rounded-lg text-center">
-              <Image className="h-12 w-12 text-slate-400 mx-auto mb-2" />
-              <p className="text-sm text-slate-600 mb-2">Module Logo</p>
-              <Button variant="outline" size="sm">
-                <Plus size={16} className="mr-2" />
-                Upload Logo
-              </Button>
-            </div>
-            <div className="p-4 border-2 border-dashed border-slate-300 rounded-lg text-center">
-              <Image className="h-12 w-12 text-slate-400 mx-auto mb-2" />
-              <p className="text-sm text-slate-600 mb-2">Banner Image</p>
-              <Button variant="outline" size="sm">
-                <Plus size={16} className="mr-2" />
-                Upload Banner
-              </Button>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <h4 className="font-semibold text-slate-900 mb-4">Module Information</h4>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Module Name</label>
-              <input
-                type="text"
-                value={user?.module || 'GASHA Anti-Virus'}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                readOnly
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Description</label>
-              <textarea
-                rows={4}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                placeholder="Update module description..."
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Contact Email</label>
-              <input
-                type="email"
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="module-support@securityservice.com"
-              />
-            </div>
-            <Button className="w-full">
-              <Save size={16} className="mr-2" />
-              Save Changes
-            </Button>
-          </div>
-        </Card>
-      </div>
-
-      <Card className="p-6">
-        <h4 className="font-semibold text-slate-900 mb-4">Announcements & Banners</h4>
-        <div className="space-y-4">
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex justify-between items-start mb-2">
-              <h5 className="font-medium text-blue-900">Security Update Available</h5>
-              <Button variant="ghost" size="sm">
-                <Edit size={16} />
-              </Button>
-            </div>
-            <p className="text-sm text-blue-800 mb-3">
-              Important security update for GASHA Anti-Virus. Please update to version 2024.1 for enhanced protection.
-            </p>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-blue-600">Active until: 2024-01-30</span>
-              <Button variant="outline" size="sm">
-                Deactivate
-              </Button>
-            </div>
-          </div>
-          
-          <Button variant="outline" className="w-full">
-            <Plus size={16} className="mr-2" />
-            Create New Announcement
-          </Button>
-        </div>
-      </Card>
-    </div>
-  );
-
-  const renderAnalytics = () => (
-    <div className="space-y-6">
-      <h3 className="text-xl font-semibold text-slate-900">Content Analytics</h3>
-      
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="p-6">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600 mb-2">2.4k</div>
-            <p className="text-sm text-slate-600">Total Views</p>
-            <p className="text-xs text-green-600 mt-1">+15% this month</p>
-          </div>
-        </Card>
-        <Card className="p-6">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-green-600 mb-2">18</div>
-            <p className="text-sm text-slate-600">Published Posts</p>
-            <p className="text-xs text-green-600 mt-1">+3 this month</p>
-          </div>
-        </Card>
-        <Card className="p-6">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-purple-600 mb-2">156</div>
-            <p className="text-sm text-slate-600">Avg. Engagement</p>
-            <p className="text-xs text-green-600 mt-1">+8% this month</p>
-          </div>
-        </Card>
-        <Card className="p-6">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-orange-600 mb-2">4.2</div>
-            <p className="text-sm text-slate-600">Avg. Rating</p>
-            <p className="text-xs text-slate-600 mt-1">Out of 5 stars</p>
-          </div>
-        </Card>
-      </div>
-
-      <Card className="p-6">
-        <h4 className="font-semibold text-slate-900 mb-4">Popular Content</h4>
-        <div className="space-y-4">
-          {[
-            { title: 'GASHA Anti-Virus Installation Guide', views: 892, engagement: 78 },
-            { title: 'Security Best Practices 2024', views: 654, engagement: 65 },
-            { title: 'Troubleshooting Common Issues', views: 543, engagement: 72 }
-          ].map((post, index) => (
-            <div key={index} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-              <div>
-                <h5 className="font-medium text-slate-900">{post.title}</h5>
-                <p className="text-sm text-slate-600">{post.views} views • {post.engagement}% engagement</p>
-              </div>
-              <Button variant="ghost" size="sm">
-                <Eye size={16} />
-              </Button>
-            </div>
-          ))}
-        </div>
-      </Card>
-    </div>
-  );
-
-  return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">Developer Dashboard</h1>
-          <p className="text-slate-600 mt-2">
-            Content creation and module management • {user?.name}
-          </p>
-        </div>
-
-        {/* Navigation Tabs */}
-        <div className="mb-8">
-          <nav className="flex space-x-8">
-            {[
-              { id: 'content', label: 'Content', icon: FileText },
-              { id: 'branding', label: 'Branding', icon: Settings },
-              { id: 'analytics', label: 'Analytics', icon: Eye }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                  activeTab === tab.id
-                    ? 'bg-blue-600 text-white'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                }`}
-              >
-                <tab.icon size={20} />
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Tab Content */}
-        {activeTab === 'content' && renderContentManagement()}
-        {activeTab === 'branding' && renderBrandingManagement()}
-        {activeTab === 'analytics' && renderAnalytics()}
-      </div>
-    </div>
-  );
 };
 
-export default DeveloperDashboard;
+export default ContentManagementSection;

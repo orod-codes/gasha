@@ -1,5 +1,23 @@
 import React, { useState } from 'react';
-import { FileText, Users, CreditCard as Edit, BarChart3, Settings, Shield, LayoutDashboard, Bell, Search, Menu, X } from 'lucide-react';
+import { 
+  BarChart3, 
+  Megaphone, 
+  Users, 
+  Search, 
+  Menu, 
+  X, 
+  LayoutDashboard,
+  Calendar,
+  Target,
+  CheckCircle,
+  XCircle,
+  Eye,
+  FileText,
+  Settings,
+  TrendingUp,
+  Mail,
+  Share2
+} from 'lucide-react';
 
 interface SidebarProps {
   activeTab: string;
@@ -12,14 +30,15 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, color: 'blue', badge: null },
-    { id: 'requests', label: 'Request Management', icon: FileText, color: 'emerald', badge: '3' },
-    { id: 'team', label: 'Team Management', icon: Users, color: 'purple', badge: null },
-    { id: 'content', label: 'Content Management', icon: Edit, color: 'orange', badge: null },
-    { id: 'analytics', label: 'Analytics & Reports', icon: BarChart3, color: 'indigo', badge: null },
-    { id: 'notifications', label: 'Notifications', icon: Bell, color: 'pink', badge: '5' },
-    { id: 'activity', label: 'Activity Log', icon: BarChart3, color: 'teal', badge: null },
-    { id: 'system', label: 'System Health', icon: Shield, color: 'red', badge: null },
-    { id: 'settings', label: 'Settings', icon: Settings, color: 'gray', badge: null }
+    { id: 'approvals', label: 'Content Approval', icon: CheckCircle, color: 'pink', badge: '5' },
+    // { id: 'leads', label: 'Lead Management', icon: Users, color: 'emerald', badge: '12' },
+    { id: 'campaigns', label: 'Campaigns', icon: Megaphone, color: 'purple', badge: null },
+    { id: 'calendar', label: 'Content Calendar', icon: Calendar, color: 'orange', badge: '3' },
+    { id: 'segmentation', label: 'Customer Segments', icon: Target, color: 'indigo', badge: null },
+    
+    { id: 'analytics', label: 'Analytics', icon: BarChart3, color: 'teal', badge: null },
+
+ 
   ];
 
   const filteredTabs = tabs.filter(tab => 
@@ -32,8 +51,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
         blue: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg',
         emerald: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg',
         purple: 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg',
-        orange: 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg',
         indigo: 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg',
+        orange: 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg',
         pink: 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg',
         teal: 'bg-gradient-to-r from-teal-500 to-teal-600 text-white shadow-lg',
         red: 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg',
@@ -55,7 +74,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
             <div className="flex items-center space-x-3">
               <img src="/mian logo.png" alt="GASHA Logo" className="w-8 h-8 object-contain" />
               <div>
-                <h2 className="text-lg font-bold text-slate-900">Admin Portal</h2>
+                <h2 className="text-lg font-bold text-slate-900">Marketing Portal</h2>
                 <p className="text-xs text-slate-500">Dashboard v2.1.0</p>
               </div>
             </div>

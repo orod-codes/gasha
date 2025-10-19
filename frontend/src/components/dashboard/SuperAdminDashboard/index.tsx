@@ -157,24 +157,37 @@ const SuperAdminDashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 flex">
+      {/* Enhanced Sidebar */}
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Main Content */}
       <div className="flex-1 overflow-hidden">
-        <div className="h-full bg-slate-50">
+        <div className="h-full bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
           <div className="p-8">
-            {/* Header */}
+            {/* Enhanced Header */}
             <div className="mb-8">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-3xl font-bold text-slate-900 capitalize">{activeTab}</h2>
-                  <p className="text-slate-600 mt-2">Manage all system modules, users, and analytics</p>
+                  <p className="text-slate-600 mt-2">Enterprise-level control and management</p>
+                  <div className="flex items-center space-x-4 mt-3">
+                    <div className="flex items-center space-x-2 bg-gradient-to-r from-green-50 to-emerald-50 px-3 py-1 rounded-lg border border-green-200">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-sm font-medium text-green-700">All Systems Operational</span>
+                    </div>
+                    <div className="flex items-center space-x-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-1 rounded-lg border border-blue-200">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-sm font-medium text-blue-700">Enterprise Mode</span>
+                    </div>
+                  </div>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm text-slate-600">System Online</span>
+                  <div className="text-right">
+                    <div className="text-sm font-medium text-slate-900">System Status</div>
+                    <div className="text-xs text-slate-600">99.9% Uptime</div>
+                  </div>
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
                 </div>
               </div>
             </div>

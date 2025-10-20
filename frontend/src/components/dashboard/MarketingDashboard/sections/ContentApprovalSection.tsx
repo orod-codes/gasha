@@ -418,60 +418,60 @@ const ContentApprovalSection: React.FC = () => {
 
       {/* Enhanced Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card className="p-4 bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200">
+        <Card className="p-4 bg-gradient-to-br from-white-50 to-white-50 border-white-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-yellow-700 font-medium">Pending Review</p>
-              <p className="text-2xl font-bold text-yellow-800">{stats.pending}</p>
-              <p className="text-xs text-yellow-600">Awaiting approval</p>
+              <p className="text-sm text-balck-700 font-medium">Pending Review</p>
+              <p className="text-2xl font-bold text-black-800">{stats.pending}</p>
+              <p className="text-xs text-black-600">Awaiting approval</p>
             </div>
             <div className="p-3 bg-yellow-200 rounded-xl">
               <Clock className="h-6 w-6 text-yellow-700" />
             </div>
           </div>
         </Card>
-        <Card className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+        <Card className="p-4 bg-gradient-to-br from-white-50 to-emerald-50 border-white-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-green-700 font-medium">Approved</p>
-              <p className="text-2xl font-bold text-green-800">{stats.approved}</p>
-              <p className="text-xs text-green-600">Ready for Admin Dashboard</p>
+              <p className="text-sm text-black-700 font-medium">Approved</p>
+              <p className="text-2xl font-bold text-black-800">{stats.approved}</p>
+              <p className="text-xs text-black-600">Ready for Admin Dashboard</p>
             </div>
             <div className="p-3 bg-green-200 rounded-xl">
               <CheckCircle className="h-6 w-6 text-green-700" />
             </div>
           </div>
         </Card>
-        <Card className="p-4 bg-gradient-to-br from-red-50 to-rose-50 border-red-200">
+        <Card className="p-4 bg-gradient-to-br from-white-50 to-rose-50 border-white-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-red-700 font-medium">Rejected</p>
-              <p className="text-2xl font-bold text-red-800">{stats.rejected}</p>
-              <p className="text-xs text-red-600">Needs revision</p>
+              <p className="text-sm text-black-700 font-medium">Rejected</p>
+              <p className="text-2xl font-bold text-white-800">{stats.rejected}</p>
+              <p className="text-xs text-black-600">Needs revision</p>
             </div>
             <div className="p-3 bg-red-200 rounded-xl">
               <XCircle className="h-6 w-6 text-red-700" />
             </div>
           </div>
         </Card>
-        <Card className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200">
+        <Card className="p-4 bg-gradient-to-br from-white-50 to-cyan-50 border-white-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-blue-700 font-medium">Rescheduled</p>
-              <p className="text-2xl font-bold text-blue-800">{stats.rescheduled}</p>
-              <p className="text-xs text-blue-600">Timeline adjusted</p>
+              <p className="text-sm text-black-700 font-medium">Rescheduled</p>
+              <p className="text-2xl font-bold text-black-800">{stats.rescheduled}</p>
+              <p className="text-xs text-black-600">Timeline adjusted</p>
             </div>
             <div className="p-3 bg-blue-200 rounded-xl">
               <Calendar className="h-6 w-6 text-blue-700" />
             </div>
           </div>
         </Card>
-        <Card className="p-4 bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200">
+        <Card className="p-4 bg-gradient-to-br from-white-50 to-violet-50 border-white-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-purple-700 font-medium">Total Budget</p>
-              <p className="text-2xl font-bold text-purple-800">{stats.totalBudget.toLocaleString()}</p>
-              <p className="text-xs text-purple-600">birr allocated</p>
+              <p className="text-sm text-white-700 font-medium">Total Budget</p>
+              <p className="text-2xl font-bold text-b-800">{stats.totalBudget.toLocaleString()}</p>
+              <p className="text-xs text-black-600">birr allocated</p>
             </div>
             <div className="p-3 bg-purple-200 rounded-xl">
               <Star className="h-6 w-6 text-purple-700" />

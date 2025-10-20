@@ -32,13 +32,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, color: 'blue', badge: null },
     { id: 'approvals', label: 'Content Approval', icon: CheckCircle, color: 'pink', badge: '5' },
     // { id: 'leads', label: 'Lead Management', icon: Users, color: 'emerald', badge: '12' },
-    { id: 'campaigns', label: 'Campaigns', icon: Megaphone, color: 'purple', badge: null },
     { id: 'calendar', label: 'Content Calendar', icon: Calendar, color: 'orange', badge: '3' },
-    { id: 'segmentation', label: 'Customer Segments', icon: Target, color: 'indigo', badge: null },
-    
     { id: 'analytics', label: 'Analytics', icon: BarChart3, color: 'teal', badge: null },
-
- 
   ];
 
   const filteredTabs = tabs.filter(tab => 

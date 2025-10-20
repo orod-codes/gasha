@@ -262,11 +262,72 @@ const DashboardOverviewSection: React.FC = () => {
           </div>
         </Card>
 
-        {/* Channel Performance Chart */}
-        
       </div>
 
-     
+
+      {/* Recent Activities and Tasks */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Activities */}
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-slate-800">Recent Activities</h3>
+            <Activity className="h-5 w-5 text-slate-500" />
+          </div>
+          <div className="space-y-4">
+            {recentActivities.map((activity) => {
+              const IconComponent = activity.icon;
+              return (
+                <div key={activity.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+                  <div className="p-2 bg-white rounded-lg shadow-sm">
+                    <IconComponent size={16} className="text-slate-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-sm text-slate-800">{activity.title}</p>
+                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                      <span className={`px-2 py-1 rounded-full ${
+                        activity.status === 'published' ? 'bg-green-100 text-green-700' :
+                        activity.status === 'qualified' ? 'bg-blue-100 text-blue-700' :
+                        activity.status === 'approved' ? 'bg-green-100 text-green-700' :
+                        'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {activity.status}
+                      </span>
+                      <span>{activity.time}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+
+        {/* Upcoming Tasks */}
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-slate-800">Upcoming Tasks</h3>
+            <Calendar className="h-5 w-5 text-slate-500" />
+          </div>
+          <div className="space-y-4">
+            {upcomingTasks.map((task) => (
+              <div key={task.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+                <div className="p-2 bg-white rounded-lg shadow-sm">
+                  {getTypeIcon(task.type)}
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-sm text-slate-800">{task.title}</p>
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <span className={`px-2 py-1 rounded-full ${getPriorityColor(task.priority)}`}>
+                      {task.priority}
+                    </span>
+                    <span>{task.dueDate}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
     </div>
   );
 };

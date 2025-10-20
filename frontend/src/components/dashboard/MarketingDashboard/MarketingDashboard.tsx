@@ -6,7 +6,6 @@ import {
 import { User } from '../../../types';
 import Sidebar from './components/Sidebar';
 import LeadsSection from './sections/LeadsSection';
-import CampaignsSection from './sections/CampaignsSection';
 import AnalyticsSection from './sections/AnalyticsSection';
 import ContentCalendarSection from './sections/ContentCalendarSection';
 import CustomerSegmentationSection from './sections/CustomerSegmentationSection';
@@ -27,8 +26,6 @@ const MarketingDashboard: React.FC<MarketingDashboardProps> = ({ user }) => {
         return <DashboardOverviewSection />;
       case 'leads':
         return <LeadsSection />;
-      case 'campaigns':
-        return <CampaignsSection />;
       case 'calendar':
         return <ContentCalendarSection />;
       case 'segmentation':

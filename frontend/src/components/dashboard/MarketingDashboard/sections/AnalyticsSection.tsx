@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
 import { 
-  BarChart3, 
-  TrendingUp, 
-  TrendingDown,
-  Users,
-  Mail,
-  MousePointer,
-  DollarSign,
-  Calendar,
   Download,
-  Filter,
-  RefreshCw
+  RefreshCw,
+  BarChart3, 
+  Users,
+  DollarSign,
+  Activity,
+  Target,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 import Card from '../../../ui/Card';
 import Button from '../../../ui/Button';
@@ -20,12 +18,8 @@ interface AnalyticsData {
   leads: number;
   conversions: number;
   revenue: number;
-  emailSent: number;
   emailOpened: number;
-  emailClicked: number;
   websiteVisits: number;
-  costPerLead: number;
-  costPerConversion: number;
 }
 
 const AnalyticsSection: React.FC = () => {
@@ -37,110 +31,125 @@ const AnalyticsSection: React.FC = () => {
       period: '2024-01-16',
       leads: 45,
       conversions: 8,
-      revenue: 12000,
-      emailSent: 2500,
+      revenue: 672000,
       emailOpened: 1875,
-      emailClicked: 450,
-      websiteVisits: 1250,
-      costPerLead: 25.50,
-      costPerConversion: 143.75
+      websiteVisits: 1250
     },
     {
       period: '2024-01-15',
       leads: 38,
       conversions: 6,
-      revenue: 9000,
-      emailSent: 2200,
+      revenue: 504000,
       emailOpened: 1650,
-      emailClicked: 330,
-      websiteVisits: 1100,
-      costPerLead: 28.20,
-      costPerConversion: 178.33
+      websiteVisits: 1100
     },
     {
       period: '2024-01-14',
       leads: 52,
       conversions: 12,
-      revenue: 18000,
-      emailSent: 2800,
+      revenue: 1008000,
       emailOpened: 2100,
-      emailClicked: 560,
-      websiteVisits: 1400,
-      costPerLead: 22.80,
-      costPerConversion: 98.75
+      websiteVisits: 1400
     },
     {
       period: '2024-01-13',
       leads: 41,
       conversions: 7,
-      revenue: 10500,
-      emailSent: 2400,
+      revenue: 588000,
       emailOpened: 1800,
-      emailClicked: 360,
-      websiteVisits: 1200,
-      costPerLead: 26.10,
-      costPerConversion: 152.14
+      websiteVisits: 1200
     },
     {
       period: '2024-01-12',
       leads: 48,
       conversions: 9,
-      revenue: 13500,
-      emailSent: 2600,
+      revenue: 756000,
       emailOpened: 1950,
-      emailClicked: 390,
-      websiteVisits: 1300,
-      costPerLead: 24.30,
-      costPerConversion: 129.17
+      websiteVisits: 1300
     }
   ];
-
-  const calculateGrowth = (current: number, previous: number) => {
-    if (previous === 0) return 0;
-    return ((current - previous) / previous) * 100;
-  };
 
   const getTotalStats = () => {
     const totals = analyticsData.reduce((acc, data) => ({
       leads: acc.leads + data.leads,
       conversions: acc.conversions + data.conversions,
       revenue: acc.revenue + data.revenue,
-      emailSent: acc.emailSent + data.emailSent,
       emailOpened: acc.emailOpened + data.emailOpened,
-      emailClicked: acc.emailClicked + data.emailClicked,
-      websiteVisits: acc.websiteVisits + data.websiteVisits,
-      costPerLead: acc.costPerLead + data.costPerLead,
-      costPerConversion: acc.costPerConversion + data.costPerConversion
+      websiteVisits: acc.websiteVisits + data.websiteVisits
     }), {
       leads: 0,
       conversions: 0,
       revenue: 0,
-      emailSent: 0,
       emailOpened: 0,
-      emailClicked: 0,
-      websiteVisits: 0,
-      costPerLead: 0,
-      costPerConversion: 0
+      websiteVisits: 0
     });
 
     return {
       ...totals,
-      costPerLead: totals.costPerLead / analyticsData.length,
-      costPerConversion: totals.costPerConversion / analyticsData.length,
-      conversionRate: (totals.conversions / totals.leads) * 100,
-      emailOpenRate: (totals.emailOpened / totals.emailSent) * 100,
-      emailClickRate: (totals.emailClicked / totals.emailSent) * 100
+      conversionRate: (totals.conversions / totals.leads) * 100
     };
   };
 
   const stats = getTotalStats();
 
   const getGrowthIcon = (growth: number) => {
-    return growth >= 0 ? <TrendingUp size={16} className="text-green-600" /> : <TrendingDown size={16} className="text-red-600" />;
+    return growth >= 0 ? <ArrowUp size={16} className="text-green-600" /> : <ArrowDown size={16} className="text-red-600" />;
   };
 
   const getGrowthColor = (growth: number) => {
     return growth >= 0 ? 'text-green-600' : 'text-red-600';
+  };
+
+  const handleExport = () => {
+    // Create CSV data
+    const csvData = analyticsData.map(data => ({
+      Date: data.period,
+      Leads: data.leads,
+      Conversions: data.conversions,
+      Revenue: data.revenue,
+      'Email Opens': data.emailOpened,
+      'Website Visits': data.websiteVisits
+    }));
+
+    // Convert to CSV string
+    const headers = Object.keys(csvData[0]);
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => headers.map(header => row[header as keyof typeof row]).join(','))
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `marketing-analytics-${selectedPeriod}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleRefresh = () => {
+    // Simulate data refresh
+    window.location.reload();
+  };
+
+  const handlePeriodChange = (period: string) => {
+    setSelectedPeriod(period);
+    // Here you would typically fetch new data based on the selected period
+    console.log(`Period changed to: ${period}`);
+  };
+
+  const handleMetricChange = (metric: string) => {
+    setSelectedMetric(metric);
+    console.log(`Metric changed to: ${metric}`);
+  };
+
+  const handleViewDetails = () => {
+    // Here you would typically open a detailed view or modal
+    console.log(`Viewing details for ${selectedMetric} in ${selectedPeriod}`);
+    alert(`Viewing detailed analytics for ${selectedMetric} in ${selectedPeriod}`);
   };
 
   return (
@@ -154,7 +163,7 @@ const AnalyticsSection: React.FC = () => {
         <div className="flex gap-2">
           <select
             value={selectedPeriod}
-            onChange={(e) => setSelectedPeriod(e.target.value)}
+            onChange={(e) => handlePeriodChange(e.target.value)}
             className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="7d">Last 7 days</option>
@@ -162,11 +171,11 @@ const AnalyticsSection: React.FC = () => {
             <option value="90d">Last 90 days</option>
             <option value="1y">Last year</option>
           </select>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleExport}>
             <Download size={16} className="mr-2" />
             Export
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleRefresh}>
             <RefreshCw size={16} className="mr-2" />
             Refresh
           </Button>
@@ -175,147 +184,89 @@ const AnalyticsSection: React.FC = () => {
 
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="p-4">
+        <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-600">Total Leads</p>
-              <p className="text-2xl font-bold text-slate-900">{stats.leads}</p>
-              <div className="flex items-center mt-1">
+              <p className="text-3xl font-bold text-slate-900">{stats.leads}</p>
+              <div className="flex items-center mt-2">
                 {getGrowthIcon(12.5)}
                 <span className={`text-sm ml-1 ${getGrowthColor(12.5)}`}>+12.5%</span>
               </div>
             </div>
-            <Users className="h-8 w-8 text-blue-600" />
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <Users className="h-6 w-6 text-blue-600" />
+            </div>
           </div>
         </Card>
-        <Card className="p-4">
+        <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-600">Conversions</p>
-              <p className="text-2xl font-bold text-slate-900">{stats.conversions}</p>
-              <div className="flex items-center mt-1">
+              <p className="text-3xl font-bold text-slate-900">{stats.conversions}</p>
+              <div className="flex items-center mt-2">
                 {getGrowthIcon(8.3)}
                 <span className={`text-sm ml-1 ${getGrowthColor(8.3)}`}>+8.3%</span>
               </div>
             </div>
-            <TrendingUp className="h-8 w-8 text-green-600" />
+            <div className="p-3 bg-green-100 rounded-lg">
+              <Target className="h-6 w-6 text-green-600" />
+            </div>
           </div>
         </Card>
-        <Card className="p-4">
+        <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-600">Revenue</p>
-              <p className="text-2xl font-bold text-slate-900">{stats.revenue.toLocaleString()} birr</p>
-              <div className="flex items-center mt-1">
+              <p className="text-3xl font-bold text-slate-900">ETB {stats.revenue.toLocaleString()}</p>
+              <div className="flex items-center mt-2">
                 {getGrowthIcon(15.2)}
                 <span className={`text-sm ml-1 ${getGrowthColor(15.2)}`}>+15.2%</span>
               </div>
             </div>
-            <DollarSign className="h-8 w-8 text-green-600" />
+            <div className="p-3 bg-purple-100 rounded-lg">
+              <DollarSign className="h-6 w-6 text-purple-600" />
+            </div>
           </div>
         </Card>
-        <Card className="p-4">
+        <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-600">Conversion Rate</p>
-              <p className="text-2xl font-bold text-slate-900">{stats.conversionRate.toFixed(1)}%</p>
-              <div className="flex items-center mt-1">
+              <p className="text-3xl font-bold text-slate-900">{stats.conversionRate.toFixed(1)}%</p>
+              <div className="flex items-center mt-2">
                 {getGrowthIcon(-2.1)}
                 <span className={`text-sm ml-1 ${getGrowthColor(-2.1)}`}>-2.1%</span>
               </div>
             </div>
-            <BarChart3 className="h-8 w-8 text-purple-600" />
+            <div className="p-3 bg-orange-100 rounded-lg">
+              <BarChart3 className="h-6 w-6 text-orange-600" />
+            </div>
           </div>
         </Card>
       </div>
 
-      {/* Email Performance */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-600">Email Open Rate</p>
-              <p className="text-2xl font-bold text-blue-600">{stats.emailOpenRate.toFixed(1)}%</p>
-              <div className="flex items-center mt-1">
-                {getGrowthIcon(3.2)}
-                <span className={`text-sm ml-1 ${getGrowthColor(3.2)}`}>+3.2%</span>
-              </div>
-            </div>
-            <Mail className="h-8 w-8 text-blue-600" />
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-600">Email Click Rate</p>
-              <p className="text-2xl font-bold text-green-600">{stats.emailClickRate.toFixed(1)}%</p>
-              <div className="flex items-center mt-1">
-                {getGrowthIcon(1.8)}
-                <span className={`text-sm ml-1 ${getGrowthColor(1.8)}`}>+1.8%</span>
-              </div>
-            </div>
-            <MousePointer className="h-8 w-8 text-green-600" />
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-600">Website Visits</p>
-              <p className="text-2xl font-bold text-purple-600">{stats.websiteVisits.toLocaleString()}</p>
-              <div className="flex items-center mt-1">
-                {getGrowthIcon(7.5)}
-                <span className={`text-sm ml-1 ${getGrowthColor(7.5)}`}>+7.5%</span>
-              </div>
-            </div>
-            <BarChart3 className="h-8 w-8 text-purple-600" />
-          </div>
-        </Card>
-      </div>
-
-      {/* Cost Analysis */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-600">Cost Per Lead</p>
-              <p className="text-2xl font-bold text-orange-600">{stats.costPerLead.toFixed(2)} birr</p>
-              <div className="flex items-center mt-1">
-                {getGrowthIcon(-5.2)}
-                <span className={`text-sm ml-1 ${getGrowthColor(-5.2)}`}>-5.2%</span>
-              </div>
-            </div>
-            <DollarSign className="h-8 w-8 text-orange-600" />
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-600">Cost Per Conversion</p>
-              <p className="text-2xl font-bold text-red-600">{stats.costPerConversion.toFixed(2)} birr</p>
-              <div className="flex items-center mt-1">
-                {getGrowthIcon(-8.7)}
-                <span className={`text-sm ml-1 ${getGrowthColor(-8.7)}`}>-8.7%</span>
-              </div>
-            </div>
-            <TrendingDown className="h-8 w-8 text-red-600" />
-          </div>
-        </Card>
-      </div>
 
       {/* Recent Performance Table */}
       <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-6">
           <h4 className="text-lg font-semibold text-slate-900">Daily Performance</h4>
+          <div className="flex items-center space-x-3">
           <select
             value={selectedMetric}
-            onChange={(e) => setSelectedMetric(e.target.value)}
-            className="px-3 py-1 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            onChange={(e) => handleMetricChange(e.target.value)}
+              className="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="leads">Leads</option>
             <option value="conversions">Conversions</option>
             <option value="revenue">Revenue</option>
             <option value="emailOpened">Email Opens</option>
           </select>
+            <Button variant="outline" size="sm" onClick={handleViewDetails}>
+              <Activity size={16} className="mr-2" />
+              View Details
+            </Button>
+          </div>
         </div>
         
         <div className="overflow-x-auto">
@@ -328,7 +279,6 @@ const AnalyticsSection: React.FC = () => {
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Revenue</th>
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Email Opens</th>
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Website Visits</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Cost/Lead</th>
               </tr>
             </thead>
             <tbody>
@@ -337,10 +287,9 @@ const AnalyticsSection: React.FC = () => {
                   <td className="py-3 px-4 text-sm text-slate-900">{data.period}</td>
                   <td className="py-3 px-4 text-sm text-slate-900">{data.leads}</td>
                   <td className="py-3 px-4 text-sm text-slate-900">{data.conversions}</td>
-                  <td className="py-3 px-4 text-sm text-slate-900">{data.revenue.toLocaleString()} birr</td>
+                  <td className="py-3 px-4 text-sm text-slate-900">ETB {data.revenue.toLocaleString()}</td>
                   <td className="py-3 px-4 text-sm text-slate-900">{data.emailOpened}</td>
                   <td className="py-3 px-4 text-sm text-slate-900">{data.websiteVisits}</td>
-                  <td className="py-3 px-4 text-sm text-slate-900">{data.costPerLead.toFixed(2)} birr</td>
                 </tr>
               ))}
             </tbody>
@@ -348,22 +297,102 @@ const AnalyticsSection: React.FC = () => {
         </div>
       </Card>
 
-      {/* ROI Summary */}
+      {/* Visual Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="p-6">
+          <h4 className="text-lg font-semibold text-slate-900 mb-4">Revenue Trend</h4>
+          <div className="space-y-4">
+            {analyticsData.slice(0, 5).map((data, index) => (
+              <div key={index} className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  <span className="text-sm text-slate-600">{data.period}</span>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <span className="text-sm font-medium text-slate-900">ETB {data.revenue.toLocaleString()}</span>
+                  <div className="w-20 bg-slate-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-500 h-2 rounded-full" 
+                      style={{ width: `${(data.revenue / Math.max(...analyticsData.map(d => d.revenue))) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card className="p-6">
+          <h4 className="text-lg font-semibold text-slate-900 mb-4">Channel Performance</h4>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <span className="text-sm text-slate-600">Email Marketing</span>
+              </div>
+              <div className="flex items-center space-x-4">
+                <span className="text-sm font-medium text-slate-900">{stats.emailOpened}</span>
+                <div className="w-20 bg-slate-200 rounded-full h-2">
+                  <div className="bg-blue-500 h-2 rounded-full" style={{ width: '75%' }}></div>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span className="text-sm text-slate-600">Website Traffic</span>
+              </div>
+              <div className="flex items-center space-x-4">
+                <span className="text-sm font-medium text-slate-900">{stats.websiteVisits}</span>
+                <div className="w-20 bg-slate-200 rounded-full h-2">
+                  <div className="bg-green-500 h-2 rounded-full" style={{ width: '60%' }}></div>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                <span className="text-sm text-slate-600">Social Media</span>
+              </div>
+              <div className="flex items-center space-x-4">
+                <span className="text-sm font-medium text-slate-900">2,340</span>
+                <div className="w-20 bg-slate-200 rounded-full h-2">
+                  <div className="bg-purple-500 h-2 rounded-full" style={{ width: '45%' }}></div>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                <span className="text-sm text-slate-600">Direct Traffic</span>
+              </div>
+              <div className="flex items-center space-x-4">
+                <span className="text-sm font-medium text-slate-900">1,890</span>
+                <div className="w-20 bg-slate-200 rounded-full h-2">
+                  <div className="bg-orange-500 h-2 rounded-full" style={{ width: '35%' }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Performance Summary */}
       <Card className="p-6">
-        <h4 className="text-lg font-semibold text-slate-900 mb-4">ROI Summary</h4>
+        <h4 className="text-lg font-semibold text-slate-900 mb-6">Performance Summary</h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-green-600 mb-2">4.2x</div>
+          <div className="text-center p-4 bg-blue-50 rounded-lg">
+            <div className="text-3xl font-bold text-blue-600 mb-2">4.2x</div>
             <p className="text-sm text-slate-600">Return on Investment</p>
             <p className="text-xs text-slate-500 mt-1">Revenue / Marketing Spend</p>
           </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600 mb-2">18.4%</div>
+          <div className="text-center p-4 bg-green-50 rounded-lg">
+            <div className="text-3xl font-bold text-green-600 mb-2">18.4%</div>
             <p className="text-sm text-slate-600">Conversion Rate</p>
             <p className="text-xs text-slate-500 mt-1">Leads to Customers</p>
           </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-purple-600 mb-2">1,250 birr</div>
+          <div className="text-center p-4 bg-purple-50 rounded-lg">
+            <div className="text-3xl font-bold text-purple-600 mb-2">ETB 70,000</div>
             <p className="text-sm text-slate-600">Average Deal Size</p>
             <p className="text-xs text-slate-500 mt-1">Revenue per Conversion</p>
           </div>

@@ -79,92 +79,6 @@ const ContentLibrarySection: React.FC = () => {
   }, []);
 
   // Mock data removed - now using real API calls
-  // const contentAssets: ContentAsset[] = [
-    {
-      id: 'ASSET-001',
-      name: 'GASHA Logo - Primary',
-      type: 'image',
-      category: 'branding',
-      size: '2.4 MB',
-      uploadedBy: 'Design Team',
-      uploadDate: '2024-01-10',
-      lastModified: '2024-01-15',
-      tags: ['logo', 'brand', 'primary'],
-      downloads: 45,
-      status: 'active',
-      description: 'Primary GASHA logo in PNG format with transparent background'
-    },
-    {
-      id: 'ASSET-002',
-      name: 'Product Launch Email Template',
-      type: 'template',
-      category: 'email',
-      size: '156 KB',
-      uploadedBy: 'Marketing Team',
-      uploadDate: '2024-01-12',
-      lastModified: '2024-01-14',
-      tags: ['email', 'template', 'product-launch'],
-      downloads: 23,
-      status: 'active',
-      description: 'HTML email template for product launch campaigns'
-    },
-    {
-      id: 'ASSET-003',
-      name: 'Security Awareness Video',
-      type: 'video',
-      category: 'marketing',
-      size: '45.2 MB',
-      uploadedBy: 'Video Team',
-      uploadDate: '2024-01-08',
-      lastModified: '2024-01-08',
-      tags: ['video', 'security', 'awareness'],
-      downloads: 67,
-      status: 'active',
-      description: 'Educational video about cybersecurity best practices'
-    },
-    {
-      id: 'ASSET-004',
-      name: 'LinkedIn Post Templates',
-      type: 'template',
-      category: 'social',
-      size: '89 KB',
-      uploadedBy: 'Social Media Manager',
-      uploadDate: '2024-01-05',
-      lastModified: '2024-01-13',
-      tags: ['linkedin', 'template', 'social'],
-      downloads: 34,
-      status: 'active',
-      description: 'Collection of LinkedIn post templates for different content types'
-    },
-    {
-      id: 'ASSET-005',
-      name: 'Company Presentation Deck',
-      type: 'presentation',
-      category: 'presentation',
-      size: '12.8 MB',
-      uploadedBy: 'Sales Team',
-      uploadDate: '2024-01-03',
-      lastModified: '2024-01-16',
-      tags: ['presentation', 'company', 'sales'],
-      downloads: 89,
-      status: 'active',
-      description: 'Comprehensive company presentation for sales meetings'
-    },
-    {
-      id: 'ASSET-006',
-      name: 'Old Marketing Banner',
-      type: 'image',
-      category: 'marketing',
-      size: '1.2 MB',
-      uploadedBy: 'Design Team',
-      uploadDate: '2023-12-15',
-      lastModified: '2023-12-15',
-      tags: ['banner', 'old', 'marketing'],
-      downloads: 12,
-      status: 'archived',
-      description: 'Previous marketing banner design (archived)'
-    }
-  ];
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -224,6 +138,30 @@ const ContentLibrarySection: React.FC = () => {
     totalDownloads: contentAssets.reduce((sum, a) => sum + a.downloads, 0),
     totalSize: '62.8 MB'
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-2 text-slate-600">Loading content assets...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-8">
+          <div className="text-red-600 mb-4">⚠️</div>
+          <h3 className="text-lg font-semibold text-slate-900 mb-2">Error Loading Content Assets</h3>
+          <p className="text-slate-600 mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

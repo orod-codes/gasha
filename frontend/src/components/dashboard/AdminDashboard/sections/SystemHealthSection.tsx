@@ -40,26 +40,15 @@ const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
   const loadSystemData = async () => {
     setIsRefreshing(true);
     try {
-      // Simulate API call
+      // TODO: Replace with real system health API call
+      // For now, we'll show empty state until the API is implemented
+      setMetrics([]);
+      setServices([]);
+      
+      // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      setMetrics([
-        { name: 'CPU Usage', value: 45, unit: '%', status: 'healthy', trend: 'stable' },
-        { name: 'Memory Usage', value: 78, unit: '%', status: 'warning', trend: 'up' },
-        { name: 'Disk Usage', value: 62, unit: '%', status: 'healthy', trend: 'stable' },
-        { name: 'Network I/O', value: 23, unit: 'Mbps', status: 'healthy', trend: 'down' },
-        { name: 'Database Connections', value: 12, unit: 'active', status: 'healthy', trend: 'stable' },
-        { name: 'Response Time', value: 245, unit: 'ms', status: 'healthy', trend: 'down' }
-      ]);
-
-      setServices([
-        { name: 'Web Server', status: 'running', uptime: '15d 8h 32m', lastCheck: '2024-01-15 14:30:00' },
-        { name: 'Database', status: 'running', uptime: '15d 8h 32m', lastCheck: '2024-01-15 14:30:00' },
-        { name: 'Email Service', status: 'running', uptime: '12d 4h 15m', lastCheck: '2024-01-15 14:30:00' },
-        { name: 'Backup Service', status: 'stopped', uptime: '0d 0h 0m', lastCheck: '2024-01-15 14:30:00' },
-        { name: 'Monitoring Agent', status: 'running', uptime: '15d 8h 32m', lastCheck: '2024-01-15 14:30:00' },
-        { name: 'API Gateway', status: 'error', uptime: '0d 0h 0m', lastCheck: '2024-01-15 14:30:00' }
-      ]);
+      console.log('System health data loaded - no mock data');
     } catch (error) {
       console.error('Failed to load system data:', error);
     } finally {
@@ -115,6 +104,22 @@ const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
           {isRefreshing ? 'Refreshing...' : 'Refresh'}
         </Button>
       </div>
+
+      {metrics.length === 0 && services.length === 0 && !isRefreshing && (
+        <div className="text-center py-12">
+          <Server size={48} className="mx-auto text-slate-400 mb-4" />
+          <h4 className="text-lg font-medium text-slate-900 mb-2">No System Health Data</h4>
+          <p className="text-slate-600 mb-4">System health monitoring is not yet configured.</p>
+          <p className="text-sm text-slate-500">Contact your system administrator to set up monitoring.</p>
+        </div>
+      )}
+
+      {isRefreshing && (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-2 text-slate-600">Loading system health data...</span>
+        </div>
+      )}
 
       {/* Overall Health Status */}
       <Card className="p-6">

@@ -136,19 +136,6 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin }) => 
             {loading ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
-
-        <div className="p-6 pt-0">
-          <div className="bg-slate-50 rounded-lg p-4">
-            <h4 className="font-medium text-slate-900 mb-2">Demo Accounts</h4>
-            <div className="text-sm text-slate-600 space-y-1">
-              <div>Super Admin: superadmin@securityservice.com</div>
-              <div>Admin: admin@securityservice.com</div>
-              <div>Marketing: marketing@securityservice.com</div>
-              <div>Developer: developer@securityservice.com</div>
-              <div>Password: demo123</div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

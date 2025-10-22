@@ -1,34 +1,31 @@
 const express = require('express');
-const router = express.Router();
+const { authenticateToken } = require('../../middleware/auth');
 const {
-  getAllRequests,
-  getRequestById,
+  getRequests,
+  getRequest,
   createRequest,
-  updateRequestStatus,
-  addMarketingNotes,
-  addTechnicalNotes,
-  getRequestStats,
+  updateRequest,
   deleteRequest
 } = require('../../controllers/requests/requestController');
-const { authenticateToken, authorize } = require('../../middleware/auth');
-const { validateRequest, validateId, validatePagination } = require('../../middleware/validation');
 
-// Public routes
-router.post('/', validateRequest, createRequest);
+const router = express.Router();
 
-// Protected routes
+// All routes require authentication
 router.use(authenticateToken);
 
-router.get('/', validatePagination, getAllRequests);
-router.get('/stats', getRequestStats);
-router.get('/:id', validateId, getRequestById);
+// Get all requests
+router.get('/', getRequests);
 
-// Admin and marketing routes
-router.put('/:id/status', authorize('super-admin', 'admin'), updateRequestStatus);
-router.put('/:id/marketing-notes', authorize('marketing', 'admin', 'super-admin'), addMarketingNotes);
-router.put('/:id/technical-notes', authorize('technical', 'admin', 'super-admin'), addTechnicalNotes);
+// Get request by ID
+router.get('/:id', getRequest);
 
-// Admin only routes
-router.delete('/:id', authorize('super-admin', 'admin'), validateId, deleteRequest);
+// Create request
+router.post('/', createRequest);
+
+// Update request
+router.put('/:id', updateRequest);
+
+// Delete request
+router.delete('/:id', deleteRequest);
 
 module.exports = router;

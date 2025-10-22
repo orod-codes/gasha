@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   TrendingUp,
   Users,
@@ -29,118 +29,84 @@ import Button from '../../../ui/Button';
 
 const DashboardOverviewSection: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
-  const stats = {
-    totalLeads: 1247,
-    activeCampaigns: 8,
-    scheduledContent: 12,
-    pendingApprovals: 5,
-    conversionRate: 12.5,
-    revenue: 125000, // This will be displayed in Birr
-    emailOpenRate: 24.8,
-    socialEngagement: 8.2,
-    websiteVisitors: 15420,
-    bounceRate: 35.2,
-    avgSessionDuration: 3.5,
-    costPerLead: 45.5
-  };
+  const [stats, setStats] = useState({
+    totalLeads: 0,
+    activeCampaigns: 0,
+    scheduledContent: 0,
+    pendingApprovals: 0,
+    conversionRate: 0,
+    revenue: 0,
+    emailOpenRate: 0,
+    socialEngagement: 0,
+    websiteVisitors: 0,
+    bounceRate: 0,
+    avgSessionDuration: 0,
+    costPerLead: 0
+  });
 
-  // Chart data for revenue trend
-  const revenueData = [
-    { month: 'Jan', revenue: 85000, leads: 890 },
-    { month: 'Feb', revenue: 95000, leads: 1020 },
-    { month: 'Mar', revenue: 110000, leads: 1150 },
-    { month: 'Apr', revenue: 125000, leads: 1247 },
-  ];
+  const [revenueData, setRevenueData] = useState([]);
 
-  // Channel performance data
-  const channelData = [
-    { channel: 'Social Media', leads: 450, revenue: 45000, color: 'bg-blue-500' },
-    { channel: 'Email Marketing', leads: 380, revenue: 38000, color: 'bg-green-500' },
-    { channel: 'Google Ads', leads: 280, revenue: 28000, color: 'bg-purple-500' },
-    { channel: 'Content Marketing', leads: 137, revenue: 14000, color: 'bg-orange-500' },
-  ];
+  const [channelData, setChannelData] = useState([]);
 
-  // Device analytics
-  const deviceData = [
-    { device: 'Mobile', percentage: 65, visitors: 10023 },
-    { device: 'Desktop', percentage: 30, visitors: 4626 },
-    { device: 'Tablet', percentage: 5, visitors: 771 },
-  ];
+  const [deviceData, setDeviceData] = useState([]);
 
-  // Conversion funnel data
-  const funnelData = [
-    { stage: 'Visitors', count: 15420, percentage: 100 },
-    { stage: 'Leads', count: 1247, percentage: 8.1 },
-    { stage: 'Qualified', count: 498, percentage: 3.2 },
-    { stage: 'Customers', count: 149, percentage: 1.0 },
-  ];
+  const [funnelData, setFunnelData] = useState([]);
 
-  const recentActivities = [
-    {
-      id: 1,
-      type: 'campaign',
-      title: 'Q1 Product Launch Campaign',
-      status: 'published',
-      time: '2 hours ago',
-      icon: Megaphone
-    },
-    {
-      id: 2,
-      type: 'lead',
-      title: 'New lead from LinkedIn',
-      status: 'qualified',
-      time: '4 hours ago',
-      icon: Users
-    },
-    {
-      id: 3,
-      type: 'approval',
-      title: 'Email template approved',
-      status: 'approved',
-      time: '6 hours ago',
-      icon: CheckCircle
-    },
-    {
-      id: 4,
-      type: 'content',
-      title: 'Blog post scheduled',
-      status: 'scheduled',
-      time: '1 day ago',
-      icon: Calendar
-    }
-  ];
+  const [recentActivities, setRecentActivities] = useState([]);
 
-  const upcomingTasks = [
-    {
-      id: 1,
-      title: 'Review Q1 campaign performance',
-      dueDate: 'Today',
-      priority: 'high',
-      type: 'analytics'
-    },
-    {
-      id: 2,
-      title: 'Approve social media posts',
-      dueDate: 'Tomorrow',
-      priority: 'medium',
-      type: 'approval'
-    },
-    {
-      id: 3,
-      title: 'Update customer segments',
-      dueDate: 'This week',
-      priority: 'low',
-      type: 'segmentation'
-    },
-    {
-      id: 4,
-      title: 'Schedule February content',
-      dueDate: 'Next week',
-      priority: 'medium',
-      type: 'calendar'
-    }
-  ];
+  const [upcomingTasks, setUpcomingTasks] = useState([]);
+
+  // Fetch data on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // TODO: Replace with real API calls
+        // const statsResponse = await getMarketingStats();
+        // const revenueResponse = await getRevenueData();
+        // const channelResponse = await getChannelData();
+        // const deviceResponse = await getDeviceData();
+        // const funnelResponse = await getFunnelData();
+        // const activitiesResponse = await getRecentActivities();
+        // const tasksResponse = await getUpcomingTasks();
+        
+        // For now, set empty data
+        setStats({
+          totalLeads: 0,
+          activeCampaigns: 0,
+          scheduledContent: 0,
+          pendingApprovals: 0,
+          conversionRate: 0,
+          revenue: 0,
+          emailOpenRate: 0,
+          socialEngagement: 0,
+          websiteVisitors: 0,
+          bounceRate: 0,
+          avgSessionDuration: 0,
+          costPerLead: 0
+        });
+        setRevenueData([]);
+        setChannelData([]);
+        setDeviceData([]);
+        setFunnelData([]);
+        setRecentActivities([]);
+        setUpcomingTasks([]);
+        
+      } catch (err) {
+        console.error('Error fetching marketing dashboard data:', err);
+        setError('Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [selectedPeriod]);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -180,6 +146,30 @@ const DashboardOverviewSection: React.FC = () => {
       default: return <Globe size={16} />;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-2 text-slate-600">Loading dashboard data...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-8">
+          <div className="text-red-600 mb-4">⚠️</div>
+          <h3 className="text-lg font-semibold text-slate-900 mb-2">Error Loading Dashboard</h3>
+          <p className="text-slate-600 mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

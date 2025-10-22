@@ -1,34 +1,27 @@
 const express = require('express');
-const router = express.Router();
+const { authenticateToken } = require('../../middleware/auth');
 const {
-  getDashboardAnalytics,
-  getRequestAnalytics,
-  getTaskAnalytics,
-  getUserAnalytics,
-  getContentAnalytics,
-  getSystemHealth
+  getAnalytics,
+  getAnalyticsByModule,
+  createAnalytics,
+  getAnalyticsSummary
 } = require('../../controllers/analytics/analyticsController');
-const { authenticateToken, authorize } = require('../../middleware/auth');
+
+const router = express.Router();
 
 // All routes require authentication
 router.use(authenticateToken);
 
-// Dashboard analytics (all authenticated users)
-router.get('/dashboard', getDashboardAnalytics);
+// Get all analytics
+router.get('/', getAnalytics);
 
-// Request analytics (admin and marketing)
-router.get('/requests', authorize('super-admin', 'admin', 'marketing'), getRequestAnalytics);
+// Get analytics summary
+router.get('/summary', getAnalyticsSummary);
 
-// Task analytics (admin and technical)
-router.get('/tasks', authorize('super-admin', 'admin', 'technical'), getTaskAnalytics);
+// Get analytics by module
+router.get('/module/:module', getAnalyticsByModule);
 
-// User analytics (admin only)
-router.get('/users', authorize('super-admin', 'admin'), getUserAnalytics);
-
-// Content analytics (admin and marketing)
-router.get('/content', authorize('super-admin', 'admin', 'marketing'), getContentAnalytics);
-
-// System health (admin only)
-router.get('/system', authorize('super-admin', 'admin'), getSystemHealth);
+// Create analytics record
+router.post('/', createAnalytics);
 
 module.exports = router;

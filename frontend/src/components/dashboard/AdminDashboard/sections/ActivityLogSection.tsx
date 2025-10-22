@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Activity, User, Clock, Filter, Download, Search, Eye } from 'lucide-react';
 import Card from '../../../ui/Card';
 import Button from '../../../ui/Button';
@@ -27,97 +27,36 @@ const ActivityLogSection: React.FC<ActivityLogSectionProps> = ({
   const [filter, setFilter] = useState<'all' | 'login' | 'request' | 'content' | 'settings' | 'system'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'success' | 'failed' | 'warning'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const activityLogs: ActivityLog[] = [
-    {
-      id: '1',
-      user: 'admin@securityservice.com',
-      action: 'User Login',
-      details: 'Successful login from Chrome browser',
-      timestamp: '2024-01-15 14:30:00',
-      ipAddress: '192.168.1.100',
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      status: 'success',
-      category: 'login'
-    },
-    {
-      id: '2',
-      user: 'admin@securityservice.com',
-      action: 'Request Approved',
-      details: 'Approved REQ-001 for TechCorp Solutions',
-      timestamp: '2024-01-15 14:25:00',
-      ipAddress: '192.168.1.100',
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      status: 'success',
-      category: 'request'
-    },
-    {
-      id: '3',
-      user: 'marketing@securityservice.com',
-      action: 'Content Created',
-      details: 'Created new blog post: "Security Best Practices Guide"',
-      timestamp: '2024-01-15 14:20:00',
-      ipAddress: '192.168.1.101',
-      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-      status: 'success',
-      category: 'content'
-    },
-    {
-      id: '4',
-      user: 'admin@securityservice.com',
-      action: 'Settings Updated',
-      details: 'Updated notification preferences',
-      timestamp: '2024-01-15 14:15:00',
-      ipAddress: '192.168.1.100',
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      status: 'success',
-      category: 'settings'
-    },
-    {
-      id: '5',
-      user: 'unknown@external.com',
-      action: 'Failed Login Attempt',
-      details: 'Invalid credentials provided',
-      timestamp: '2024-01-15 14:10:00',
-      ipAddress: '203.0.113.1',
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      status: 'failed',
-      category: 'login'
-    },
-    {
-      id: '6',
-      user: 'admin@securityservice.com',
-      action: 'System Backup',
-      details: 'Daily backup completed successfully',
-      timestamp: '2024-01-15 12:00:00',
-      ipAddress: '192.168.1.100',
-      userAgent: 'System Process',
-      status: 'success',
-      category: 'system'
-    },
-    {
-      id: '7',
-      user: 'admin@securityservice.com',
-      action: 'Team Member Added',
-      details: 'Added Sarah Johnson to marketing team',
-      timestamp: '2024-01-15 10:30:00',
-      ipAddress: '192.168.1.100',
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      status: 'success',
-      category: 'settings'
-    },
-    {
-      id: '8',
-      user: 'admin@securityservice.com',
-      action: 'Request Rejected',
-      details: 'Rejected REQ-002 due to incomplete information',
-      timestamp: '2024-01-15 09:45:00',
-      ipAddress: '192.168.1.100',
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      status: 'warning',
-      category: 'request'
-    }
-  ];
+  // Fetch activity logs on component mount
+  useEffect(() => {
+    const fetchActivityLogs = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // TODO: Replace with real activity logs API call
+        // For now, we'll show empty state until the API is implemented
+        setActivityLogs([]);
+        
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        console.log('Activity logs loaded - no mock data');
+      } catch (err) {
+        console.error('Error fetching activity logs:', err);
+        setError('Failed to load activity logs');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActivityLogs();
+  }, []);
+
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -160,11 +99,33 @@ const ActivityLogSection: React.FC<ActivityLogSectionProps> = ({
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-semibold text-slate-900">User Activity Log</h3>
-        <Button onClick={onExportLogs}>
+        <Button onClick={onExportLogs} disabled={loading}>
           <Download size={16} className="mr-2" />
           Export Logs
         </Button>
       </div>
+
+      {loading && (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-2 text-slate-600">Loading activity logs...</span>
+        </div>
+      )}
+
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-700">{error}</p>
+        </div>
+      )}
+
+      {activityLogs.length === 0 && !loading && !error && (
+        <div className="text-center py-12">
+          <Activity size={48} className="mx-auto text-slate-400 mb-4" />
+          <h4 className="text-lg font-medium text-slate-900 mb-2">No Activity Logs</h4>
+          <p className="text-slate-600 mb-4">Activity logging is not yet configured.</p>
+          <p className="text-sm text-slate-500">Activity logs will appear here once available.</p>
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

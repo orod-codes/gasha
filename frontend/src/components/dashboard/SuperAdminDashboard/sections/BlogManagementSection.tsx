@@ -42,8 +42,8 @@ const BlogManagementSection: React.FC<BlogManagementSectionProps> = ({
             </div>
             <h4 className="font-semibold text-slate-900">Blog Posts</h4>
           </div>
-          <div className="text-3xl font-bold text-blue-600 mb-2">24</div>
-          <p className="text-sm text-slate-600">Published articles</p>
+          <div className="text-3xl font-bold text-blue-600 mb-2">0</div>
+          <p className="text-slate-600">No published articles</p>
           <div className="mt-4">
             <Button variant="outline" size="sm" className="w-full" onClick={onManageBlogs}>
               Manage Blog Posts
@@ -58,8 +58,8 @@ const BlogManagementSection: React.FC<BlogManagementSectionProps> = ({
             </div>
             <h4 className="font-semibold text-slate-900">News Articles</h4>
           </div>
-          <div className="text-3xl font-bold text-green-600 mb-2">18</div>
-          <p className="text-sm text-slate-600">Recent updates</p>
+          <div className="text-3xl font-bold text-green-600 mb-2">0</div>
+          <p className="text-slate-600">No news articles</p>
           <div className="mt-4">
             <Button variant="outline" size="sm" className="w-full" onClick={onManageNews}>
               Manage News
@@ -74,8 +74,8 @@ const BlogManagementSection: React.FC<BlogManagementSectionProps> = ({
             </div>
             <h4 className="font-semibold text-slate-900">Draft Posts</h4>
           </div>
-          <div className="text-3xl font-bold text-orange-600 mb-2">7</div>
-          <p className="text-sm text-slate-600">Pending review</p>
+          <div className="text-3xl font-bold text-orange-600 mb-2">0</div>
+          <p className="text-slate-600">No draft posts</p>
           <div className="mt-4">
             <Button variant="outline" size="sm" className="w-full" onClick={onReviewDrafts}>
               Review Drafts

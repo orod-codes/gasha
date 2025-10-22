@@ -203,26 +203,9 @@ const OverviewSection: React.FC<OverviewSectionProps> = ({
         </div>
         
         <div className="space-y-4">
-          {[
-            { action: 'New admin created', module: 'GASHA Admin', time: '2 minutes ago', status: 'success' },
-            { action: 'Module updated', module: 'NISIR SIEM', time: '15 minutes ago', status: 'info' },
-            { action: 'User request processed', module: 'Security Service', time: '1 hour ago', status: 'success' },
-            { action: 'System backup completed', module: 'All Modules', time: '2 hours ago', status: 'success' },
-            { action: 'New blog post published', module: 'Blog Management', time: '3 hours ago', status: 'info' }
-          ].map((activity, index) => (
-            <div key={index} className="flex items-center justify-between p-4 border border-slate-200 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div className={`w-2 h-2 rounded-full ${
-                  activity.status === 'success' ? 'bg-green-500' : 'bg-blue-500'
-                }`}></div>
-                <div>
-                  <p className="font-medium text-slate-900">{activity.action}</p>
-                  <p className="text-sm text-slate-600">{activity.module}</p>
-                </div>
-              </div>
-              <span className="text-sm text-slate-500">{activity.time}</span>
-            </div>
-          ))}
+          <div className="text-center py-8">
+            <p className="text-slate-600">No recent activity to display</p>
+          </div>
         </div>
       </Card>
     </div>

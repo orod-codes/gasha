@@ -12,6 +12,7 @@ import CustomerSegmentationSection from './sections/CustomerSegmentationSection'
 import DashboardOverviewSection from './sections/DashboardOverviewSection';
 import ContentLibrarySection from './sections/ContentLibrarySection';
 import ContentApprovalSection from './sections/ContentApprovalSection';
+import RequestNotificationsSection from './sections/RequestNotificationsSection';
 
 interface MarketingDashboardProps {
   user: User;
@@ -32,6 +33,8 @@ const MarketingDashboard: React.FC<MarketingDashboardProps> = ({ user }) => {
         return <CustomerSegmentationSection />;
       case 'approvals':
         return <ContentApprovalSection />;
+      case 'notifications':
+        return <RequestNotificationsSection />;
       case 'analytics':
         return <AnalyticsSection />;
       case 'content':

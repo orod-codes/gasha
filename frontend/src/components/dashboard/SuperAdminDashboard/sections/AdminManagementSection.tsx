@@ -4,12 +4,13 @@ import Card from '../../../ui/Card';
 import Button from '../../../ui/Button';
 
 interface Admin {
-  id: number;
+  id: string;
   name: string;
   email: string;
   role: string;
   status: string;
   employees: number;
+  module?: string;
 }
 
 interface AdminManagementSectionProps {
@@ -17,7 +18,8 @@ interface AdminManagementSectionProps {
   onCreateAdmin: () => void;
   onViewDetails: (admin: Admin) => void;
   onEditAdmin: (admin: Admin) => void;
-  onToggleStatus: (adminId: number) => void;
+  onDeleteAdmin: (adminId: string) => void;
+  onToggleStatus: (adminId: string) => void;
 }
 
 const AdminManagementSection: React.FC<AdminManagementSectionProps> = ({
@@ -25,6 +27,7 @@ const AdminManagementSection: React.FC<AdminManagementSectionProps> = ({
   onCreateAdmin = () => {},
   onViewDetails = () => {},
   onEditAdmin = () => {},
+  onDeleteAdmin = () => {},
   onToggleStatus = () => {}
 }) => {
   return (
@@ -55,6 +58,12 @@ const AdminManagementSection: React.FC<AdminManagementSectionProps> = ({
                 <span className="text-slate-600 font-medium">Role</span>
                 <span className="font-semibold text-slate-900">{admin.role}</span>
               </div>
+              {admin.module && (
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-600 font-medium">Module</span>
+                  <span className="font-semibold text-slate-900">{admin.module}</span>
+                </div>
+              )}
               <div className="flex justify-between items-center">
                 <span className="text-slate-600 font-medium">Employees</span>
                 <span className="font-semibold text-slate-900">{admin.employees}</span>
@@ -103,6 +112,15 @@ const AdminManagementSection: React.FC<AdminManagementSectionProps> = ({
                     Activate
                   </>
                 )}
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full text-red-600 hover:bg-red-50 hover:border-red-200"
+                onClick={() => onDeleteAdmin(admin.id)}
+              >
+                <Trash2 size={14} className="mr-2" />
+                Delete Admin
               </Button>
             </div>
           </Card>

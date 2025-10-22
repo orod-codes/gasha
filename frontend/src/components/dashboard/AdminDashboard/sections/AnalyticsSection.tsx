@@ -35,7 +35,6 @@ const AnalyticsSection: React.FC<AnalyticsSectionProps> = ({
           <div className="text-center">
             <div className="text-3xl font-bold text-blue-600 mb-2">{totalRequests}</div>
             <p className="text-sm text-slate-600">Total Requests</p>
-            <p className="text-xs text-green-600 mt-1">+12% this month</p>
           </div>
         </Card>
         <Card className="p-6">
@@ -49,14 +48,12 @@ const AnalyticsSection: React.FC<AnalyticsSectionProps> = ({
           <div className="text-center">
             <div className="text-3xl font-bold text-orange-600 mb-2">{inProgressRequests}</div>
             <p className="text-sm text-slate-600">In Progress</p>
-            <p className="text-xs text-slate-600 mt-1">Average: 3 days</p>
           </div>
         </Card>
         <Card className="p-6">
           <div className="text-center">
             <div className="text-3xl font-bold text-purple-600 mb-2">{contentPosts}</div>
             <p className="text-sm text-slate-600">Content Posts</p>
-            <p className="text-xs text-green-600 mt-1">+5 this week</p>
           </div>
         </Card>
       </div>

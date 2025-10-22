@@ -1,31 +1,25 @@
 const express = require('express');
-const router = express.Router();
+const { authenticateToken, authorize } = require('../../middleware/auth');
 const {
-  getAllProducts,
-  getProductById,
+  getProducts,
+  getProduct,
   createProduct,
   updateProduct,
-  deleteProduct,
-  getProductsByCategory,
-  getProductsByModule,
-  getProductStats
+  deleteProduct
 } = require('../../controllers/products/productController');
-const { authenticateToken, authorize } = require('../../middleware/auth');
-const { validateProduct, validateId, validatePagination } = require('../../middleware/validation');
+
+const router = express.Router();
 
 // Public routes
-router.get('/', validatePagination, getAllProducts);
-router.get('/stats', getProductStats);
-router.get('/category/:category', getProductsByCategory);
-router.get('/module/:module', getProductsByModule);
-router.get('/:id', validateId, getProductById);
+router.get('/', getProducts);
+router.get('/:id', getProduct);
 
-// Protected routes (admin only)
+// Protected routes (require authentication)
 router.use(authenticateToken);
-router.use(authorize('super-admin', 'admin'));
 
-router.post('/', validateProduct, createProduct);
-router.put('/:id', validateId, updateProduct);
-router.delete('/:id', validateId, deleteProduct);
+// Admin and Super Admin only routes
+router.post('/', authorize('admin', 'super-admin'), createProduct);
+router.put('/:id', authorize('admin', 'super-admin'), updateProduct);
+router.delete('/:id', authorize('admin', 'super-admin'), deleteProduct);
 
 module.exports = router;

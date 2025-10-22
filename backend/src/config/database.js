@@ -1,25 +1,35 @@
-const { Pool } = require('pg');
+const mongoose = require('mongoose');
 require('dotenv').config();
 
-const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 5432,
-  database: process.env.DB_NAME || 'security_service',
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/security_service');
+
+    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error);
+    process.exit(1);
+  }
+};
+
+// Handle connection events
+mongoose.connection.on('connected', () => {
+  console.log('✅ Connected to MongoDB database');
 });
 
-// Test database connection
-pool.on('connect', () => {
-  console.log('✅ Connected to PostgreSQL database');
+mongoose.connection.on('error', (err) => {
+  console.error('❌ MongoDB connection error:', err);
 });
 
-pool.on('error', (err) => {
-  console.error('❌ Database connection error:', err);
-  process.exit(-1);
+mongoose.connection.on('disconnected', () => {
+  console.log('❌ MongoDB disconnected');
 });
 
-module.exports = pool;
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  await mongoose.connection.close();
+  console.log('MongoDB connection closed through app termination');
+  process.exit(0);
+});
+
+module.exports = connectDB;

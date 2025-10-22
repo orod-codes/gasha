@@ -24,98 +24,13 @@ const AlertBanner: React.FC<AlertBannerProps> = ({ alerts = [], onDismiss }) => 
   const [isConnected, setIsConnected] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
-  // Real-time alert simulation
-  const generateRandomAlert = (): Alert => {
-    const alertTypes = ['info', 'warning', 'error', 'success'] as const;
-    const priorities = ['low', 'medium', 'high', 'critical'] as const;
-    const type = alertTypes[Math.floor(Math.random() * alertTypes.length)];
-    const priority = priorities[Math.floor(Math.random() * priorities.length)];
-    
-    const alertTemplates = {
-      info: [
-        { title: 'System Update Available', message: 'New system update v2.1.3 is available for installation.' },
-        { title: 'Scheduled Maintenance', message: 'Routine maintenance scheduled for tonight at 2:00 AM UTC.' },
-        { title: 'New Feature Released', message: 'Dashboard analytics feature has been released to production.' }
-      ],
-      warning: [
-        { title: 'High Memory Usage', message: 'Memory usage has reached 80%. Consider optimizing applications.' },
-        { title: 'Slow Response Time', message: 'API response time has increased by 200ms in the last hour.' },
-        { title: 'Disk Space Warning', message: 'Available disk space is below 20%. Cleanup recommended.' }
-      ],
-      error: [
-        { title: 'Service Unavailable', message: 'Payment processing service is experiencing intermittent failures.' },
-        { title: 'Database Error', message: 'Database connection pool exhausted. Investigating root cause.' },
-        { title: 'Authentication Failed', message: 'Multiple failed login attempts detected from suspicious IPs.' }
-      ],
-      success: [
-        { title: 'Backup Completed', message: 'Daily backup completed successfully. 1.2GB of data secured.' },
-        { title: 'Security Scan Passed', message: 'Weekly security scan completed with no vulnerabilities found.' },
-        { title: 'Performance Optimized', message: 'Database query optimization improved response time by 40%.' }
-      ]
-    };
-
-    const templates = alertTemplates[type];
-    const template = templates[Math.floor(Math.random() * templates.length)];
-
-    return {
-      id: `alert-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      type,
-      title: template.title,
-      message: template.message,
-      timestamp: new Date().toISOString(),
-      priority,
-      dismissible: priority !== 'critical',
-      autoHide: priority === 'low' || priority === 'medium',
-      duration: priority === 'low' ? 5000 : priority === 'medium' ? 8000 : undefined
-    };
-  };
+  // Real-time alert handling - no mock data generation
 
   useEffect(() => {
-    // Use provided alerts or generate sample alerts
-    const initialAlerts = alerts.length > 0 ? alerts : [
-      {
-        id: '1',
-        type: 'warning' as const,
-        title: 'High Server Load Detected',
-        message: 'CPU usage has exceeded 85% for the past 10 minutes. Consider scaling resources.',
-        timestamp: new Date().toISOString(),
-        priority: 'high' as const,
-        dismissible: true,
-        autoHide: false
-      },
-      {
-        id: '2',
-        type: 'info' as const,
-        title: 'System Maintenance Scheduled',
-        message: 'Scheduled maintenance will begin at 2:00 AM UTC. Expected downtime: 30 minutes.',
-        timestamp: new Date().toISOString(),
-        priority: 'medium' as const,
-        dismissible: true,
-        autoHide: true,
-        duration: 10000
-      }
-    ];
+    // Use provided alerts or show empty state
+    setCurrentAlerts(alerts);
 
-    setCurrentAlerts(initialAlerts);
-
-    // Simulate real-time alerts
-    const alertInterval = setInterval(() => {
-      if (isConnected && Math.random() > 0.7) { // 30% chance of new alert
-        const newAlert = generateRandomAlert();
-        setCurrentAlerts(prev => [newAlert, ...prev.slice(0, 4)]); // Keep max 5 alerts
-        setLastUpdate(new Date());
-      }
-    }, 15000); // Check every 15 seconds
-
-    // Simulate connection status changes
-    const connectionInterval = setInterval(() => {
-      setIsConnected(prev => Math.random() > 0.1); // 90% uptime
-    }, 30000);
-
-    return () => {
-      clearInterval(alertInterval);
-      clearInterval(connectionInterval);
-    };
+    // No mock alert simulation - alerts come from real sources
   }, [alerts, isConnected]);
 
   useEffect(() => {

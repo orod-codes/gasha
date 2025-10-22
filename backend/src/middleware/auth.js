@@ -1,10 +1,10 @@
 const jwt = require('jsonwebtoken');
-const pool = require('../config/database');
+const User = require('../models/User');
 
-// Middleware to verify JWT token
+// Verify JWT token
 const authenticateToken = async (req, res, next) => {
   try {
-    const authHeader = req.headers['authorization'];
+    const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
     if (!token) {
@@ -17,22 +17,16 @@ const authenticateToken = async (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
-    // Get user from database
-    const result = await pool.query(
-      'SELECT id, uuid, email, name, role, module, status FROM users WHERE id = $1',
-      [decoded.userId]
-    );
-
-    if (result.rows.length === 0) {
+    // Check if user still exists and is active
+    const user = await User.findById(decoded.userId);
+    
+    if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid token - user not found'
+        message: 'User not found'
       });
     }
 
-    const user = result.rows[0];
-    
-    // Check if user is active
     if (user.status !== 'active') {
       return res.status(401).json({
         success: false,
@@ -40,8 +34,14 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
-    // Add user to request object
-    req.user = user;
+    // Add user info to request
+    req.user = {
+      userId: user._id,
+      email: user.email,
+      role: user.role,
+      module: user.module
+    };
+
     next();
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {
@@ -50,7 +50,7 @@ const authenticateToken = async (req, res, next) => {
         message: 'Invalid token'
       });
     }
-    
+
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({
         success: false,
@@ -59,14 +59,14 @@ const authenticateToken = async (req, res, next) => {
     }
 
     console.error('Auth middleware error:', error);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
-      message: 'Authentication error'
+      message: 'Authentication failed'
     });
   }
 };
 
-// Middleware to check user roles
+// Check if user has required role
 const authorize = (...roles) => {
   return (req, res, next) => {
     if (!req.user) {
@@ -87,8 +87,8 @@ const authorize = (...roles) => {
   };
 };
 
-// Middleware to check if user can access module
-const authorizeModule = (moduleName) => {
+// Check if user has access to specific module
+const authorizeModule = (module) => {
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({
@@ -97,16 +97,16 @@ const authorizeModule = (moduleName) => {
       });
     }
 
-    // Super admin can access everything
+    // Super admin has access to all modules
     if (req.user.role === 'super-admin') {
       return next();
     }
 
-    // Check if user has access to the module
-    if (req.user.module !== moduleName) {
+    // Check if user has access to the specific module
+    if (req.user.module !== module) {
       return res.status(403).json({
         success: false,
-        message: `Access denied to ${moduleName} module`
+        message: 'Access denied to this module'
       });
     }
 
@@ -117,18 +117,20 @@ const authorizeModule = (moduleName) => {
 // Optional authentication (doesn't fail if no token)
 const optionalAuth = async (req, res, next) => {
   try {
-    const authHeader = req.headers['authorization'];
+    const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];
 
     if (token) {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const result = await pool.query(
-        'SELECT id, uuid, email, name, role, module, status FROM users WHERE id = $1',
-        [decoded.userId]
-      );
-
-      if (result.rows.length > 0 && result.rows[0].status === 'active') {
-        req.user = result.rows[0];
+      const user = await User.findById(decoded.userId);
+      
+      if (user && user.status === 'active') {
+        req.user = {
+          userId: user._id,
+          email: user.email,
+          role: user.role,
+          module: user.module
+        };
       }
     }
 

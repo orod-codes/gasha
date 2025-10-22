@@ -4,9 +4,14 @@ import { FileText, Users, CreditCard as Edit, BarChart3, Settings, Shield, Layou
 interface SidebarProps {
   activeTab: string;
   onTabChange: (tabId: string) => void;
+  user?: {
+    module?: string;
+    modules?: string[];
+    name?: string;
+  };
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, user }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -57,6 +62,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
               <div>
                 <h2 className="text-lg font-bold text-slate-900">Admin Portal</h2>
                 <p className="text-xs text-slate-500">Dashboard v2.1.0</p>
+                {user && (
+                  <p className="text-xs text-blue-600 font-medium">
+                    {user.module || (user.modules && user.modules[0]) || 'GASHA'} Module
+                  </p>
+                )}
               </div>
             </div>
           )}

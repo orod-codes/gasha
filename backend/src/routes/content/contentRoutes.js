@@ -1,36 +1,31 @@
 const express = require('express');
-const router = express.Router();
+const { authenticateToken } = require('../../middleware/auth');
 const {
-  getAllContent,
-  getContentById,
+  getContent,
+  getContentItem,
   createContent,
   updateContent,
-  publishContent,
-  archiveContent,
-  deleteContent,
-  getContentStats,
-  searchContent
+  deleteContent
 } = require('../../controllers/content/contentController');
-const { authenticateToken, authorize } = require('../../middleware/auth');
-const { validateContent, validateId, validatePagination, validateSearch } = require('../../middleware/validation');
 
-// Public routes
-router.get('/search', validateSearch, searchContent);
+const router = express.Router();
 
-// Protected routes
+// All routes require authentication
 router.use(authenticateToken);
 
-router.get('/', validatePagination, getAllContent);
-router.get('/stats', getContentStats);
-router.get('/:id', validateId, getContentById);
+// Get all content
+router.get('/', getContent);
 
-// Content creation and management (marketing, admin)
-router.post('/', authorize('marketing', 'admin', 'super-admin'), validateContent, createContent);
-router.put('/:id', validateId, updateContent);
-router.put('/:id/publish', validateId, publishContent);
-router.put('/:id/archive', validateId, archiveContent);
+// Get content by ID
+router.get('/:id', getContentItem);
 
-// Delete content (admin only)
-router.delete('/:id', authorize('admin', 'super-admin'), validateId, deleteContent);
+// Create content
+router.post('/', createContent);
+
+// Update content
+router.put('/:id', updateContent);
+
+// Delete content
+router.delete('/:id', deleteContent);
 
 module.exports = router;

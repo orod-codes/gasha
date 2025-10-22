@@ -92,11 +92,19 @@ function App() {
     setCurrentView('dashboard');
   };
 
-  const handleLogout = () => {
-    setUser(null);
-    // Remove user data from localStorage
-    localStorage.removeItem('user');
-    setCurrentView('landing');
+  const handleLogout = async () => {
+    try {
+      // Call logout API to invalidate token on server
+      const { logoutUser } = await import('./services/authService');
+      await logoutUser();
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Always clear local state regardless of API call result
+      setUser(null);
+      localStorage.removeItem('user');
+      setCurrentView('landing');
+    }
   };
 
   const renderDashboard = () => {

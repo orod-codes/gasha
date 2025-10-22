@@ -6,9 +6,10 @@ import Button from '../../../ui/Button';
 interface CreateAdminModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: { name: string; email: string; password: string; role: string }) => void;
-  data: { name: string; email: string; password: string; role: string };
-  onChange: (data: { name: string; email: string; password: string; role: string }) => void;
+  onSubmit: (data: { name: string; email: string; password: string; role: string; module: string }) => void;
+  data: { name: string; email: string; password: string; role: string; module: string };
+  onChange: (data: { name: string; email: string; password: string; role: string; module: string }) => void;
+  modules: Array<{ _id?: string; id?: string; name?: string; displayName?: string }>;
 }
 
 const CreateAdminModal: React.FC<CreateAdminModalProps> = ({
@@ -16,12 +17,17 @@ const CreateAdminModal: React.FC<CreateAdminModalProps> = ({
   onClose,
   onSubmit,
   data,
-  onChange
+  onChange,
+  modules
 }) => {
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (modules.length === 0) {
+      alert('Please create a module first before assigning an admin.');
+      return;
+    }
     onSubmit(data);
   };
 
@@ -100,12 +106,38 @@ const CreateAdminModal: React.FC<CreateAdminModalProps> = ({
                 required
               >
                 <option value="">Select role</option>
-                <option value="GASHA Admin">GASHA Admin</option>
-                <option value="NISIR Admin">NISIR Admin</option>
-                <option value="ENYUMA Admin">ENYUMA Admin</option>
-                <option value="CODEPRO Admin">CODEPRO Admin</option>
-                <option value="Biometrics Admin">Biometrics Admin</option>
+                <option value="admin">Admin</option>
+                <option value="marketing">Marketing</option>
+                <option value="technical">Technical</option>
+                <option value="developer">Developer</option>
               </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Assign to Module
+              </label>
+              <select
+                value={data.module}
+                onChange={(e) => onChange({...data, module: e.target.value})}
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required
+                disabled={modules.length === 0}
+              >
+                <option value="">
+                  {modules.length === 0 ? 'No modules available - Create a module first' : 'Select module'}
+                </option>
+                {modules.map((module) => (
+                  <option key={module._id || module.id} value={module._id || module.id}>
+                    {module.displayName || module.name}
+                  </option>
+                ))}
+              </select>
+              {modules.length === 0 && (
+                <p className="text-sm text-orange-600 mt-1">
+                  You need to create a module first before assigning an admin.
+                </p>
+              )}
             </div>
           </div>
 
@@ -113,7 +145,7 @@ const CreateAdminModal: React.FC<CreateAdminModalProps> = ({
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit">
+            <Button type="submit" disabled={modules.length === 0}>
               Create Admin
             </Button>
           </div>

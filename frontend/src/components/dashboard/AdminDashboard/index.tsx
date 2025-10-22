@@ -9,6 +9,9 @@ import AnalyticsSection from './sections/AnalyticsSection';
 import ViewRequestDetailsModal from './modals/ViewRequestDetailsModal';
 import AddTeamMemberModal from './modals/AddTeamMemberModal';
 import CreatePostModal from './modals/CreatePostModal';
+import { getRequests } from '../../../services/requestService';
+import { getUsersByModule } from '../../../services/userService';
+import { getDashboardStats } from '../../../services/statsService';
 
 interface AdminDashboardProps {
   user: User;
@@ -16,6 +19,14 @@ interface AdminDashboardProps {
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const [activeTab, setActiveTab] = useState('requests');
+
+  // Data states
+  const [moduleRequests, setModuleRequests] = useState<any[]>([]);
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [blogPosts, setBlogPosts] = useState<any[]>([]);
+  const [dashboardStats, setDashboardStats] = useState<any>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const hashToTab: Record<string, string> = {
     '#admin-requests': 'requests',
@@ -32,6 +43,46 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     'analytics': '#admin-analytics',
     'notifications': '#admin-notifications'
   };
+
+  // Fetch data on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch requests
+        const requests = await getRequests();
+        setModuleRequests(requests);
+
+        // Fetch team members for the current user's module
+        const userModule = user?.module || (user?.modules && user.modules[0]);
+        if (userModule) {
+          const teamResponse = await getUsersByModule(userModule);
+          if (teamResponse.success && teamResponse.data) {
+            setTeamMembers(teamResponse.data);
+          }
+        }
+
+        // Fetch dashboard stats
+        const statsResponse = await getDashboardStats();
+        if (statsResponse.success && statsResponse.data) {
+          setDashboardStats(statsResponse.data);
+        }
+
+        // TODO: Fetch blog posts when content API is available
+        setBlogPosts([]);
+
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError('Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user?.module, user?.modules, user?.modules?.[0]]);
 
   useEffect(() => {
     const applyHash = () => {
@@ -52,6 +103,36 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
       window.location.hash = nextHash;
     }
   };
+
+  // Refresh data function
+  const handleRefreshData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const requests = await getRequests();
+      setModuleRequests(requests);
+
+      const userModule = user?.module || user?.modules?.[0];
+      if (userModule) {
+        const teamResponse = await getUsersByModule(userModule);
+        if (teamResponse.success && teamResponse.data) {
+          setTeamMembers(teamResponse.data);
+        }
+      }
+
+      const statsResponse = await getDashboardStats();
+      if (statsResponse.success && statsResponse.data) {
+        setDashboardStats(statsResponse.data);
+      }
+
+    } catch (err) {
+      console.error('Error refreshing data:', err);
+      setError('Failed to refresh data');
+    } finally {
+      setLoading(false);
+    }
+  };
   
   // Modal states
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
@@ -59,76 +140,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false);
 
-  const moduleRequests = [
-    {
-      id: 'REQ-001',
-      productName: 'GASHA Anti-Virus',
-      companyName: 'TechCorp Solutions',
-      contactEmail: 'admin@techcorp.com',
-      status: 'validated',
-      submittedDate: '2024-01-15',
-      marketingNotes: 'All information verified, company has 150 computers',
-      formData: {
-        totalComputers: 150,
-        windowsOS: 120,
-        linuxOS: 30,
-        contactPerson1: 'John Smith',
-        contactPerson2: 'Jane Doe'
-      }
-    },
-    {
-      id: 'REQ-002',
-      productName: 'GASHA WAF',
-      companyName: 'SecureBank Ltd',
-      contactEmail: 'security@securebank.com',
-      status: 'pending',
-      submittedDate: '2024-01-14',
-      marketingNotes: 'Waiting for additional server information',
-      formData: {
-        hasInternalWebsite: true,
-        serverOS: 'Ubuntu 20.04',
-        webServer: 'Nginx'
-      }
-    },
-    {
-      id: 'REQ-003',
-      productName: 'NISIR SIEM',
-      companyName: 'DataFlow Inc',
-      contactEmail: 'it@dataflow.com',
-      status: 'approved',
-      submittedDate: '2024-01-13',
-      adminNotes: 'Approved for enterprise deployment',
-      assignedTo: 'Technical Team Alpha'
-    }
-  ];
-
-  const teamMembers = [
-    { id: 1, name: 'Sarah Johnson', role: 'Marketing Lead', status: 'active', requests: 23 },
-    { id: 2, name: 'Mike Chen', role: 'Marketing Specialist', status: 'active', requests: 18 },
-    { id: 3, name: 'Alex Rodriguez', role: 'Technical Lead', status: 'active', tasks: 12 },
-    { id: 4, name: 'Emma Wilson', role: 'Developer', status: 'active', content: 8 }
-  ];
-
-  const blogPosts = [
-    {
-      id: 1,
-      title: 'GASHA Anti-Virus Update 2024.1',
-      author: 'Emma Wilson',
-      status: 'pending',
-      type: 'blog',
-      createdDate: '2024-01-15',
-      content: 'New features and security improvements...'
-    },
-    {
-      id: 2,
-      title: 'Security Best Practices Guide',
-      author: 'Alex Rodriguez',
-      status: 'published',
-      type: 'news',
-      createdDate: '2024-01-12',
-      content: 'Essential security practices for enterprises...'
-    }
-  ];
 
 
   // Handler functions
@@ -192,19 +203,51 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     // Implementation for exporting report
   };
 
+  const handleMarkAsRead = (notificationId: string) => {
+    console.log('Marking notification as read:', notificationId);
+    // Implementation for marking notification as read
+  };
+
+  const handleMarkAllAsRead = () => {
+    console.log('Marking all notifications as read');
+    // Implementation for marking all notifications as read
+  };
+
+  const handleDeleteNotification = (notificationId: string) => {
+    console.log('Deleting notification:', notificationId);
+    // Implementation for deleting notification
+  };
+
 
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-slate-50 flex">
-        <Sidebar activeTab={activeTab} onTabChange={handleTabChange} />
+        <Sidebar activeTab={activeTab} onTabChange={handleTabChange} user={user} />
         
         <div className="flex-1 overflow-auto">
           <div className="p-8">
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-slate-900">Admin Dashboard</h1>
               <p className="text-slate-600 mt-2">
-                Managing {user?.module || 'GASHA'} module • {user?.name}
+                Managing {user?.module || (user?.modules && user.modules[0]) || 'GASHA'} module • {user?.name}
               </p>
+              {loading && (
+                <div className="mt-4 flex items-center space-x-2 text-blue-600">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <span className="text-sm">Loading dashboard data...</span>
+                </div>
+              )}
+              {error && (
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-700 text-sm">{error}</p>
+                  <button 
+                    onClick={handleRefreshData}
+                    className="mt-2 text-red-600 hover:text-red-800 text-sm underline"
+                  >
+                    Try again
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Tab Content */}
@@ -236,10 +279,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
             )}
             {activeTab === 'analytics' && (
               <AnalyticsSection
-                totalRequests={68}
-                completedRequests={45}
-                inProgressRequests={20}
-                contentPosts={15}
+                totalRequests={dashboardStats.totalRequests || moduleRequests.length}
+                completedRequests={dashboardStats.completedRequests || moduleRequests.filter(r => r.status === 'approved').length}
+                inProgressRequests={dashboardStats.pendingRequests || moduleRequests.filter(r => r.status === 'pending').length}
+                contentPosts={blogPosts.length}
                 onExportReport={handleExportReport}
               />
             )}

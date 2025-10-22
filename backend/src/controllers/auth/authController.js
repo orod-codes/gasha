@@ -1,6 +1,5 @@
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const pool = require('../../config/database');
+const User = require('../../models/User');
 
 // Generate JWT token
 const generateToken = (userId) => {
@@ -17,19 +16,14 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     // Find user by email
-    const result = await pool.query(
-      'SELECT id, uuid, email, password_hash, name, role, module, status FROM users WHERE email = $1',
-      [email.toLowerCase()]
-    );
+    const user = await User.findOne({ email: email.toLowerCase() });
 
-    if (result.rows.length === 0) {
+    if (!user) {
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
       });
     }
-
-    const user = result.rows[0];
 
     // Check if user is active
     if (user.status !== 'active') {
@@ -40,7 +34,7 @@ const login = async (req, res) => {
     }
 
     // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+    const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
@@ -49,22 +43,21 @@ const login = async (req, res) => {
     }
 
     // Update last login
-    await pool.query(
-      'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1',
-      [user.id]
-    );
+    user.lastLogin = new Date();
+    await user.save();
 
     // Generate token
-    const token = generateToken(user.id);
+    const token = generateToken(user._id);
 
     // Return user data (without password)
     const userData = {
-      id: user.uuid,
+      id: user._id,
       email: user.email,
       name: user.name,
       role: user.role,
       module: user.module,
-      createdAt: user.created_at
+      modules: user.modules,
+      createdAt: user.createdAt
     };
 
     res.json({
@@ -89,42 +82,37 @@ const register = async (req, res) => {
     const { email, password, name, role, module } = req.body;
 
     // Check if user already exists
-    const existingUser = await pool.query(
-      'SELECT id FROM users WHERE email = $1',
-      [email.toLowerCase()]
-    );
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
 
-    if (existingUser.rows.length > 0) {
+    if (existingUser) {
       return res.status(400).json({
         success: false,
         message: 'User already exists'
       });
     }
 
-    // Hash password
-    const saltRounds = 12;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
-
     // Create user
-    const result = await pool.query(
-      `INSERT INTO users (email, password_hash, name, role, module, status) 
-       VALUES ($1, $2, $3, $4, $5, 'active') 
-       RETURNING id, uuid, email, name, role, module, created_at`,
-      [email.toLowerCase(), passwordHash, name, role, module]
-    );
+    const user = new User({
+      email: email.toLowerCase(),
+      password,
+      name,
+      role,
+      module
+    });
 
-    const newUser = result.rows[0];
+    await user.save();
 
     // Generate token
-    const token = generateToken(newUser.id);
+    const token = generateToken(user._id);
 
     const userData = {
-      id: newUser.uuid,
-      email: newUser.email,
-      name: newUser.name,
-      role: newUser.role,
-      module: newUser.module,
-      createdAt: newUser.created_at
+      id: user._id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      module: user.module,
+      modules: user.modules,
+      createdAt: user.createdAt
     };
 
     res.status(201).json({
@@ -146,19 +134,27 @@ const register = async (req, res) => {
 // Get current user profile
 const getProfile = async (req, res) => {
   try {
-    const user = req.user;
+    const user = await User.findById(req.user.userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
 
     res.json({
       success: true,
       user: {
-        id: user.uuid,
+        id: user._id,
         email: user.email,
         name: user.name,
         role: user.role,
         module: user.module,
+        modules: user.modules,
         status: user.status,
-        lastLogin: user.last_login,
-        createdAt: user.created_at
+        lastLogin: user.lastLogin,
+        createdAt: user.createdAt
       }
     });
 
@@ -175,16 +171,16 @@ const getProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const { name, email } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     // Check if email is already taken by another user
-    if (email && email !== req.user.email) {
-      const existingUser = await pool.query(
-        'SELECT id FROM users WHERE email = $1 AND id != $2',
-        [email.toLowerCase(), userId]
-      );
+    if (email) {
+      const existingUser = await User.findOne({ 
+        email: email.toLowerCase(), 
+        _id: { $ne: userId } 
+      });
 
-      if (existingUser.rows.length > 0) {
+      if (existingUser) {
         return res.status(400).json({
           success: false,
           message: 'Email already taken'
@@ -193,35 +189,34 @@ const updateProfile = async (req, res) => {
     }
 
     // Update user
-    const result = await pool.query(
-      `UPDATE users 
-       SET name = COALESCE($1, name), 
-           email = COALESCE($2, email),
-           updated_at = CURRENT_TIMESTAMP
-       WHERE id = $3 
-       RETURNING uuid, email, name, role, module, updated_at`,
-      [name, email?.toLowerCase(), userId]
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (email) updateData.email = email.toLowerCase();
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true, runValidators: true }
     );
 
-    if (result.rows.length === 0) {
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: 'User not found'
       });
     }
 
-    const updatedUser = result.rows[0];
-
     res.json({
       success: true,
       message: 'Profile updated successfully',
       user: {
-        id: updatedUser.uuid,
-        email: updatedUser.email,
-        name: updatedUser.name,
-        role: updatedUser.role,
-        module: updatedUser.module,
-        updatedAt: updatedUser.updated_at
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        module: user.module,
+        modules: user.modules,
+        updatedAt: user.updatedAt
       }
     });
 
@@ -238,15 +233,12 @@ const updateProfile = async (req, res) => {
 const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
-    // Get current password hash
-    const result = await pool.query(
-      'SELECT password_hash FROM users WHERE id = $1',
-      [userId]
-    );
+    // Get user with password
+    const user = await User.findById(userId);
 
-    if (result.rows.length === 0) {
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: 'User not found'
@@ -254,10 +246,7 @@ const changePassword = async (req, res) => {
     }
 
     // Verify current password
-    const isCurrentPasswordValid = await bcrypt.compare(
-      currentPassword, 
-      result.rows[0].password_hash
-    );
+    const isCurrentPasswordValid = await user.comparePassword(currentPassword);
 
     if (!isCurrentPasswordValid) {
       return res.status(400).json({
@@ -266,15 +255,9 @@ const changePassword = async (req, res) => {
       });
     }
 
-    // Hash new password
-    const saltRounds = 12;
-    const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
-
     // Update password
-    await pool.query(
-      'UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-      [newPasswordHash, userId]
-    );
+    user.password = newPassword;
+    await user.save();
 
     res.json({
       success: true,
@@ -300,17 +283,35 @@ const logout = async (req, res) => {
 
 // Verify token
 const verifyToken = async (req, res) => {
-  res.json({
-    success: true,
-    message: 'Token is valid',
-    user: {
-      id: req.user.uuid,
-      email: req.user.email,
-      name: req.user.name,
-      role: req.user.role,
-      module: req.user.module
+  try {
+    const user = await User.findById(req.user.userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
     }
-  });
+
+    res.json({
+      success: true,
+      message: 'Token is valid',
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        module: user.module,
+        modules: user.modules
+      }
+    });
+  } catch (error) {
+    console.error('Verify token error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Token verification failed'
+    });
+  }
 };
 
 module.exports = {

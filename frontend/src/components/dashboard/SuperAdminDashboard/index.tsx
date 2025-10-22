@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import ErrorBoundary from './components/ErrorBoundary';
 import OverviewSection from './sections/OverviewSection';
@@ -12,6 +12,10 @@ import ManageProductsModal from './modals/ManageProductsModal';
 import ViewAdminsModal from './modals/ViewAdminsModal';
 import ViewDetailsModal from './modals/ViewDetailsModal';
 import EditAdminModal from './modals/EditAdminModal';
+import { getModules, createModule, updateModule, deleteModule } from '../../../services/moduleService';
+import { createUser, getAllUsers, deleteUser, updateUser } from '../../../services/userService';
+import { getDashboardStats, getModuleStats, getRequestStats } from '../../../services/statsService';
+import { Module } from '../../../types';
 
 const SuperAdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -36,8 +40,8 @@ const SuperAdminDashboard: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   
   // Data states
-  const [newAdminData, setNewAdminData] = useState({ name: '', email: '', password: '', role: '' });
-  const [editAdminData, setEditAdminData] = useState({ name: '', email: '', password: '', role: '' });
+  const [newAdminData, setNewAdminData] = useState({ name: '', email: '', password: '', role: '', module: '' });
+  const [editAdminData, setEditAdminData] = useState({ name: '', email: '', password: '', role: '', module: '' });
   const [newModuleData, setNewModuleData] = useState({ name: '', description: '', type: '', logo: '' });
   const [editModuleData, setEditModuleData] = useState({ name: '', description: '', type: '', logo: '' });
   const [editProductData, setEditProductData] = useState({ name: '', description: '' });
@@ -45,36 +49,263 @@ const SuperAdminDashboard: React.FC = () => {
   const [newNewsData, setNewNewsData] = useState({ title: '', content: '', priority: '' });
   
   // Admin list state
-  const [adminList, setAdminList] = useState([
-    { id: 1, name: 'Sarah Johnson', email: 'sarah@gasha.com', role: 'GASHA Admin', status: 'Active', employees: 12 },
-    { id: 2, name: 'Michael Chen', email: 'michael@nisir.com', role: 'NISIR Admin', status: 'Active', employees: 8 },
-    { id: 3, name: 'Emily Rodriguez', email: 'emily@enyuma.com', role: 'ENYUMA Admin', status: 'Pending', employees: 6 },
-    { id: 4, name: 'David Kim', email: 'david@codepro.com', role: 'CODEPRO Admin', status: 'Active', employees: 4 },
-    { id: 5, name: 'Lisa Wang', email: 'lisa@biometrics.com', role: 'Biometrics Admin', status: 'Active', employees: 10 }
-  ]);
+  const [adminList, setAdminList] = useState([]);
 
-  const stats = {
-    totalUsers: 15420,
-    activeModules: 5,
-    totalRequests: 3456,
-    completedRequests: 2891
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    activeModules: 0,
+    totalRequests: 0,
+    completedRequests: 0
+  });
+
+  const [moduleStats, setModuleStats] = useState([]);
+  const [modules, setModules] = useState<Module[]>([]);
+  const [modulesLoading, setModulesLoading] = useState(true);
+
+  // Fetch modules from backend API
+  useEffect(() => {
+    const fetchModules = async () => {
+      try {
+        setModulesLoading(true);
+        console.log('🔧 Fetching modules from backend...');
+        console.log('🔧 Current token:', localStorage.getItem('token'));
+        const response = await getModules();
+        
+        if (response.success && response.data) {
+          console.log('✅ Modules fetched successfully:', response.data);
+          setModules(response.data as Module[]);
+          
+          // Update module stats with real data
+          const stats = (response.data as Module[]).map((module, index) => ({
+            name: module.displayName,
+            requests: 0, // Will be updated with real data
+            downloads: 0, // Will be updated with real data
+            color: `hsl(${(index * 60) % 360}, 70%, 50%)` // Consistent colors based on index
+          }));
+          setModuleStats(stats);
+          
+          // Fetch real statistics for each module
+          fetchModuleStatistics(stats);
+        } else {
+          console.error('❌ Failed to fetch modules:', response.error);
+          console.error('❌ Response details:', response);
+        }
+      } catch (error) {
+        console.error('❌ Error fetching modules:', error);
+      } finally {
+        setModulesLoading(false);
+      }
+    };
+
+    fetchModules();
+  }, []);
+
+  // Fetch admin list from backend API
+  const fetchAdminList = async () => {
+    try {
+      console.log('🔧 Fetching admin list from backend...');
+      const response = await getAllUsers();
+      
+      if (response.success && response.data) {
+        console.log('✅ Admin list fetched successfully:', response.data);
+        // Filter to show only admin users (not super-admin)
+        const adminUsers = response.data.filter((user: any) => 
+          user.role === 'admin' || user.role === 'marketing' || user.role === 'technical' || user.role === 'developer'
+        );
+        
+        // Transform the data to match the expected format
+        const transformedAdmins = adminUsers.map((user: any) => ({
+          id: user.id || user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          module: user.modules && user.modules.length > 0 ? user.modules[0] : user.module,
+          status: user.status === 'active' ? 'Active' : 'Inactive',
+          employees: 0 // TODO: Implement real employee count if needed
+        }));
+        
+        setAdminList(transformedAdmins);
+      } else {
+        console.error('❌ Failed to fetch admin list:', response.error);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching admin list:', error);
+    }
   };
 
-  const moduleStats = [
-    { name: 'Security Service Anti-Virus', requests: 856, downloads: 1234, color: 'bg-blue-500' },
-    { name: 'GASHA WAF', requests: 432, downloads: 0, color: 'bg-green-500' },
-    { name: 'GASHA VPN', requests: 678, downloads: 892, color: 'bg-purple-500' },
-    { name: 'NISIR SIEM', requests: 234, downloads: 0, color: 'bg-orange-500' },
-    { name: 'ENYUMA IAM', requests: 0, downloads: 0, color: 'bg-red-500' },
-    { name: 'CODEPRO', requests: 0, downloads: 0, color: 'bg-yellow-500' },
-    { name: 'Biometrics', requests: 189, downloads: 0, color: 'bg-pink-500' }
-  ];
+  // Fetch admin list on component mount
+  useEffect(() => {
+    fetchAdminList();
+  }, []);
+
+  // Fetch dashboard statistics
+  const fetchDashboardStatistics = async () => {
+    try {
+      console.log('🔧 Fetching dashboard statistics...');
+      
+      // Fetch user count
+      const usersResponse = await getAllUsers();
+      if (usersResponse.success && usersResponse.data) {
+        const totalUsers = usersResponse.data.length;
+        const activeUsers = usersResponse.data.filter((user: any) => user.status === 'active').length;
+        
+        setStats(prevStats => ({
+          ...prevStats,
+          totalUsers,
+          activeModules: modules.length
+        }));
+      }
+      
+      // Fetch request statistics
+      const requestResponse = await getRequestStats();
+      if (requestResponse.success && requestResponse.data) {
+        const totalRequests = requestResponse.data.length;
+        const completedRequests = requestResponse.data.filter((request: any) => 
+          request.status === 'completed' || request.status === 'approved'
+        ).length;
+        
+        setStats(prevStats => ({
+          ...prevStats,
+          totalRequests,
+          completedRequests
+        }));
+      }
+      
+    } catch (error) {
+      console.error('❌ Error fetching dashboard statistics:', error);
+    }
+  };
+
+  // Fetch dashboard statistics on component mount
+  useEffect(() => {
+    fetchDashboardStatistics();
+  }, [modules.length]);
+
+  // Fetch real module statistics
+  const fetchModuleStatistics = async (moduleStats: any[]) => {
+    try {
+      console.log('🔧 Fetching real module statistics...');
+      
+      // Fetch request statistics
+      const requestResponse = await getRequestStats();
+      if (requestResponse.success && requestResponse.data) {
+        console.log('✅ Request stats fetched:', requestResponse.data);
+        
+        // Count requests by module
+        const moduleRequestCounts: { [key: string]: number } = {};
+        requestResponse.data.forEach((request: any) => {
+          if (request.product && request.product.module) {
+            const moduleName = request.product.module;
+            moduleRequestCounts[moduleName] = (moduleRequestCounts[moduleName] || 0) + 1;
+          }
+        });
+        
+        // Update module stats with real request counts
+        const updatedStats = moduleStats.map(stat => ({
+          ...stat,
+          requests: moduleRequestCounts[stat.name.toLowerCase()] || 0
+        }));
+        
+        setModuleStats(updatedStats);
+      }
+      
+      // Fetch analytics for downloads (if available)
+      const analyticsResponse = await getModuleStats();
+      if (analyticsResponse.success && analyticsResponse.data) {
+        console.log('✅ Analytics fetched:', analyticsResponse.data);
+        
+        // Count downloads by module
+        const moduleDownloadCounts: { [key: string]: number } = {};
+        analyticsResponse.data.forEach((analytics: any) => {
+          if (analytics.module && analytics.metricName === 'download') {
+            moduleDownloadCounts[analytics.module] = (moduleDownloadCounts[analytics.module] || 0) + (analytics.metricValue || 1);
+          }
+        });
+        
+        // Update module stats with real download counts
+        setModuleStats(prevStats => 
+          prevStats.map(stat => ({
+            ...stat,
+            downloads: moduleDownloadCounts[stat.name.toLowerCase()] || 0
+          }))
+        );
+      }
+      
+    } catch (error) {
+      console.error('❌ Error fetching module statistics:', error);
+    }
+  };
 
   // Event handlers
-  const handleCreateAdmin = (data: { name: string; email: string; password: string; role: string }) => {
-    console.log('Creating admin:', data);
-    setShowCreateAdminModal(false);
-    setNewAdminData({ name: '', email: '', password: '', role: '' });
+  const handleDeleteAdmin = async (adminId: string) => {
+    try {
+      console.log('🔧 Deleting admin:', adminId);
+      
+      // Confirm deletion
+      if (!confirm('Are you sure you want to delete this admin? This action cannot be undone.')) {
+        return;
+      }
+      
+      const response = await deleteUser(adminId);
+      
+      if (response.success) {
+        console.log('✅ Admin deleted successfully');
+        // Refresh the admin list
+        await fetchAdminList();
+        alert('Admin deleted successfully');
+      } else {
+        console.error('❌ Failed to delete admin:', response.error);
+        alert(`Failed to delete admin: ${response.error}`);
+      }
+    } catch (error) {
+      console.error('❌ Error deleting admin:', error);
+      alert(`Error deleting admin: ${error}`);
+    }
+  };
+
+  const handleCreateAdmin = async (data: { name: string; email: string; password: string; role: string; module: string }) => {
+    console.log('🔧 Creating admin:', data);
+    console.log('🔧 Available modules:', modules);
+    console.log('🔧 Selected module ID:', data.module);
+    
+    try {
+      // Find the module name from the selected module ID
+      const selectedModule = modules.find(m => (m._id || m.id) === data.module);
+      console.log('🔧 Found selected module:', selectedModule);
+      
+      // Validate that a module is selected for non-super-admin users
+      if (!selectedModule && data.role !== 'super-admin') {
+        console.log('❌ No module selected for non-super-admin user');
+        alert('Please select a module for the admin user');
+        return;
+      }
+      
+      // Create user with modules array
+      const userData = {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        role: data.role,
+        modules: selectedModule ? [selectedModule.name] : []
+      };
+      
+      console.log('🔧 Creating user with data:', userData);
+      const response = await createUser(userData);
+      
+      if (response.success) {
+        console.log('✅ Admin created successfully');
+        // Refresh the admin list from the backend
+        await fetchAdminList();
+        setShowCreateAdminModal(false);
+        setNewAdminData({ name: '', email: '', password: '', role: '', module: '' });
+      } else {
+        console.error('❌ Failed to create admin:', response.error);
+        alert(`Failed to create admin: ${response.error}`);
+      }
+    } catch (error) {
+      console.error('❌ Error creating admin:', error);
+      alert(`Error creating admin: ${error}`);
+    }
   };
 
   const handleEditModule = (moduleId: string, moduleData: any) => {
@@ -83,8 +314,70 @@ const SuperAdminDashboard: React.FC = () => {
     setShowEditModuleModal(true);
   };
 
-  const handleDeleteModule = (moduleId: string) => {
-    console.log('Deleting module:', moduleId);
+  const handleUpdateModule = async (moduleId: string, moduleData: any) => {
+    console.log('🔧 Updating module:', moduleId, moduleData);
+    try {
+      const response = await updateModule(moduleId, moduleData);
+      if (response.success) {
+        console.log('✅ Module updated successfully');
+        // Refresh modules list
+        const modulesResponse = await getModules();
+        if (modulesResponse.success && modulesResponse.data) {
+          setModules(modulesResponse.data as Module[]);
+        }
+        setShowEditModuleModal(false);
+        setEditModuleData({ name: '', description: '', type: '', logo: '' });
+      } else {
+        console.error('❌ Failed to update module:', response.error);
+        alert(`Failed to update module: ${response.error}`);
+      }
+    } catch (error) {
+      console.error('❌ Error updating module:', error);
+      alert(`Error updating module: ${error}`);
+    }
+  };
+
+  const handleDeleteModule = async (moduleId: string) => {
+    console.log('🔧 Deleting module:', moduleId);
+    try {
+      const response = await deleteModule(moduleId);
+      if (response.success) {
+        console.log('✅ Module deleted successfully');
+        // Refresh modules list
+        const modulesResponse = await getModules();
+        if (modulesResponse.success && modulesResponse.data) {
+          setModules(modulesResponse.data as Module[]);
+        }
+      } else {
+        console.error('❌ Failed to delete module:', response.error);
+      }
+    } catch (error) {
+      console.error('❌ Error deleting module:', error);
+    }
+  };
+
+  const handleAddModule = async (moduleData: { name: string; displayName: string; description: string; logo?: string }) => {
+    console.log('🔧 Creating module:', moduleData);
+    try {
+      const response = await createModule(moduleData);
+      console.log('📋 Create module response:', response);
+      if (response.success) {
+        console.log('✅ Module created successfully');
+        // Refresh modules list
+        const modulesResponse = await getModules();
+        if (modulesResponse.success && modulesResponse.data) {
+          setModules(modulesResponse.data as Module[]);
+        }
+        setShowAddModuleModal(false);
+        setNewModuleData({ name: '', description: '', type: '', logo: '' });
+      } else {
+        console.error('❌ Failed to create module:', response.error);
+        alert(`Failed to create module: ${response.error}`);
+      }
+    } catch (error) {
+      console.error('❌ Error creating module:', error);
+      alert(`Error creating module: ${error}`);
+    }
   };
 
   const handleManageProducts = (moduleId: string) => {
@@ -120,12 +413,46 @@ const SuperAdminDashboard: React.FC = () => {
     setShowEditModal(true);
   };
 
-  const handleToggleStatus = (adminId: number) => {
-    setAdminList(prev => prev.map(a => 
-      a.id === adminId 
-        ? { ...a, status: a.status === 'Active' ? 'Disabled' : 'Active' }
-        : a
-    ));
+  const handleToggleStatus = async (adminId: string) => {
+    try {
+      console.log('🔧 Toggling status for admin:', adminId);
+      
+      // Find the current admin to get their current status
+      const currentAdmin = adminList.find(admin => admin.id === adminId);
+      if (!currentAdmin) {
+        console.error('❌ Admin not found:', adminId);
+        alert('Admin not found');
+        return;
+      }
+      
+      // Determine new status
+      const newStatus = currentAdmin.status === 'Active' ? 'inactive' : 'active';
+      const newDisplayStatus = newStatus === 'active' ? 'Active' : 'Inactive';
+      
+      console.log('🔧 Updating status from', currentAdmin.status, 'to', newStatus);
+      
+      // Update user in database
+      const response = await updateUser(adminId, { status: newStatus });
+      
+      if (response.success) {
+        console.log('✅ Admin status updated successfully');
+        
+        // Update local state
+        setAdminList(prev => prev.map(a => 
+          a.id === adminId 
+            ? { ...a, status: newDisplayStatus }
+            : a
+        ));
+        
+        alert(`Admin ${newDisplayStatus === 'Active' ? 'activated' : 'deactivated'} successfully`);
+      } else {
+        console.error('❌ Failed to update admin status:', response.error);
+        alert(`Failed to update admin status: ${response.error}`);
+      }
+    } catch (error) {
+      console.error('❌ Error updating admin status:', error);
+      alert(`Error updating admin status: ${error}`);
+    }
   };
 
   const handleCreateBlog = () => {
@@ -207,14 +534,20 @@ const SuperAdminDashboard: React.FC = () => {
               )}
               {activeTab === 'modules' && (
                 <ErrorBoundary sectionName="Module Management">
-                  <ModuleManagementSection
-                    moduleStats={moduleStats}
-                    onAddModule={() => setShowAddModuleModal(true)}
-                    onEditModule={handleEditModule}
-                    onDeleteModule={handleDeleteModule}
-                    onManageProducts={handleManageProducts}
-                    onViewAdmins={handleViewAdmins}
-                  />
+          <ModuleManagementSection
+            modules={modules.map(module => ({
+              id: module._id,
+              name: module.displayName,
+              logo: module.logo
+            }))}
+            moduleStats={moduleStats}
+            onAddModule={() => setShowAddModuleModal(true)}
+            onEditModule={handleEditModule}
+            onDeleteModule={handleDeleteModule}
+            onManageProducts={handleManageProducts}
+            onViewAdmins={handleViewAdmins}
+            loading={modulesLoading}
+          />
                 </ErrorBoundary>
               )}
               {activeTab === 'admin' && (
@@ -224,6 +557,7 @@ const SuperAdminDashboard: React.FC = () => {
                     onCreateAdmin={() => setShowCreateAdminModal(true)}
                     onViewDetails={handleViewDetails}
                     onEditAdmin={handleEditAdmin}
+                    onDeleteAdmin={handleDeleteAdmin}
                     onToggleStatus={handleToggleStatus}
                   />
                 </ErrorBoundary>
@@ -259,6 +593,7 @@ const SuperAdminDashboard: React.FC = () => {
         onSubmit={handleCreateAdmin}
         data={newAdminData}
         onChange={setNewAdminData}
+        modules={modules}
       />
       
       <AddModuleModal
@@ -269,13 +604,35 @@ const SuperAdminDashboard: React.FC = () => {
           setNewModuleData({ name: '', description: '', type: '', logo: '' });
         }}
         onSubmit={(data) => {
-          console.log('Adding/editing module:', data);
-          setShowAddModuleModal(false);
-          setNewModuleData({ name: '', description: '', type: '', logo: '' });
-          setSelectedModule('');
+          handleAddModule({
+            name: data.name.toLowerCase().replace(/\s+/g, '-'),
+            displayName: data.name,
+            description: data.description || '',
+            logo: data.logo || ''
+          });
         }}
         data={newModuleData}
         onChange={setNewModuleData}
+        selectedModule={selectedModule}
+      />
+      
+      <AddModuleModal
+        isOpen={showEditModuleModal}
+        onClose={() => {
+          setShowEditModuleModal(false);
+          setSelectedModule('');
+          setEditModuleData({ name: '', description: '', type: '', logo: '' });
+        }}
+        onSubmit={(data) => {
+          handleUpdateModule(selectedModule, {
+            name: data.name.toLowerCase().replace(/\s+/g, '-'),
+            displayName: data.name,
+            description: data.description || '',
+            logo: data.logo || ''
+          });
+        }}
+        data={editModuleData}
+        onChange={setEditModuleData}
         selectedModule={selectedModule}
       />
       

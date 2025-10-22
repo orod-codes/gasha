@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User } from '../../../types';
 // Removed unused icon imports
 import ErrorBoundary from './components/ErrorBoundary';
@@ -17,6 +17,9 @@ import SettingsSection from './sections/SettingsSection';
 import ViewRequestDetailsModal from './modals/ViewRequestDetailsModal';
 import AddTeamMemberModal from './modals/AddTeamMemberModal';
 import CreatePostModal from './modals/CreatePostModal';
+import { getRequests } from '../../../services/requestService';
+import { getUsersByModule } from '../../../services/userService';
+import { getDashboardStats } from '../../../services/statsService';
 
 interface AdminDashboardProps {
   user: User;
@@ -25,82 +28,60 @@ interface AdminDashboardProps {
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   
+  // Data states
+  const [moduleRequests, setModuleRequests] = useState<any[]>([]);
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [blogPosts, setBlogPosts] = useState<any[]>([]);
+  const [dashboardStats, setDashboardStats] = useState<any>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
   // Modal states
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [isViewRequestModalOpen, setIsViewRequestModalOpen] = useState(false);
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false);
 
-  const moduleRequests = [
-    {
-      id: 'REQ-001',
-      productName: 'GASHA Anti-Virus',
-      companyName: 'TechCorp Solutions',
-      contactEmail: 'admin@techcorp.com',
-      status: 'validated',
-      submittedDate: '2024-01-15',
-      marketingNotes: 'All information verified, company has 150 computers',
-      formData: {
-        totalComputers: 150,
-        windowsOS: 120,
-        linuxOS: 30,
-        contactPerson1: 'John Smith',
-        contactPerson2: 'Jane Doe'
-      }
-    },
-    {
-      id: 'REQ-002',
-      productName: 'GASHA WAF',
-      companyName: 'SecureBank Ltd',
-      contactEmail: 'security@securebank.com',
-      status: 'pending',
-      submittedDate: '2024-01-14',
-      marketingNotes: 'Waiting for additional server information',
-      formData: {
-        hasInternalWebsite: true,
-        serverOS: 'Ubuntu 20.04',
-        webServer: 'Nginx'
-      }
-    },
-    {
-      id: 'REQ-003',
-      productName: 'NISIR SIEM',
-      companyName: 'DataFlow Inc',
-      contactEmail: 'it@dataflow.com',
-      status: 'approved',
-      submittedDate: '2024-01-13',
-      adminNotes: 'Approved for enterprise deployment',
-      assignedTo: 'Technical Team Alpha'
-    }
-  ];
+  // Fetch data on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-  const teamMembers = [
-    { id: 1, name: 'Sarah Johnson', role: 'Marketing Lead', status: 'active', requests: 23 },
-    { id: 2, name: 'Mike Chen', role: 'Marketing Specialist', status: 'active', requests: 18 },
-    { id: 3, name: 'Alex Rodriguez', role: 'Technical Lead', status: 'active', tasks: 12 },
-    { id: 4, name: 'Emma Wilson', role: 'Developer', status: 'active', content: 8 }
-  ];
+        // Fetch requests
+        const requests = await getRequests();
+        setModuleRequests(requests);
 
-  const blogPosts = [
-    {
-      id: 1,
-      title: 'GASHA Anti-Virus Update 2024.1',
-      author: 'Emma Wilson',
-      status: 'pending',
-      type: 'blog',
-      createdDate: '2024-01-15',
-      content: 'New features and security improvements...'
-    },
-    {
-      id: 2,
-      title: 'Security Best Practices Guide',
-      author: 'Alex Rodriguez',
-      status: 'published',
-      type: 'news',
-      createdDate: '2024-01-12',
-      content: 'Essential security practices for enterprises...'
-    }
-  ];
+        // Fetch team members for the current user's module
+        const userModule = user?.module || (user?.modules && user.modules[0]);
+        if (userModule) {
+          const teamResponse = await getUsersByModule(userModule);
+          if (teamResponse.success && teamResponse.data) {
+            setTeamMembers(teamResponse.data);
+          }
+        }
+
+        // Fetch dashboard stats
+        const statsResponse = await getDashboardStats();
+        if (statsResponse.success && statsResponse.data) {
+          setDashboardStats(statsResponse.data);
+        }
+
+        // TODO: Fetch blog posts when content API is available
+        setBlogPosts([]);
+
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError('Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user?.module, user?.modules, user?.modules?.[0]]);
+
 
 
   // Handler functions
@@ -206,9 +187,33 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   };
 
   // Dashboard handlers
-  const handleRefreshData = () => {
-    console.log('Refreshing dashboard data');
-    // Implementation for refreshing dashboard data
+  const handleRefreshData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const requests = await getRequests();
+      setModuleRequests(requests);
+
+      const userModule = user?.module || user?.modules?.[0];
+      if (userModule) {
+        const teamResponse = await getUsersByModule(userModule);
+        if (teamResponse.success && teamResponse.data) {
+          setTeamMembers(teamResponse.data);
+        }
+      }
+
+      const statsResponse = await getDashboardStats();
+      if (statsResponse.success && statsResponse.data) {
+        setDashboardStats(statsResponse.data);
+      }
+
+    } catch (err) {
+      console.error('Error refreshing data:', err);
+      setError('Failed to refresh data');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Removed unused dashboard details handler
@@ -228,7 +233,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
       <Header user={user} onLogout={() => {}} />
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 flex">
         <ErrorBoundary>
-          <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+          <Sidebar activeTab={activeTab} onTabChange={setActiveTab} user={user} />
           <div className="flex-1 flex flex-col overflow-hidden">
           
           {/* Real-time Alert Banner */}
@@ -237,6 +242,31 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
           {/* Main Content */}
           <div className="flex-1 overflow-auto">
             <div className="p-8">
+              {/* Dashboard Header */}
+              <div className="mb-8">
+                <h1 className="text-3xl font-bold text-slate-900">Admin Dashboard</h1>
+                <p className="text-slate-600 mt-2">
+                  Managing {user?.module || (user?.modules && user.modules[0]) || 'GASHA'} module • {user?.name}
+                </p>
+              </div>
+              
+              {loading && (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <span className="ml-2 text-slate-600">Loading dashboard data...</span>
+                </div>
+              )}
+              {error && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg mb-6">
+                  <p className="text-red-700">{error}</p>
+                  <button 
+                    onClick={handleRefreshData}
+                    className="mt-2 text-red-600 hover:text-red-800 text-sm underline"
+                  >
+                    Try again
+                  </button>
+                </div>
+              )}
             {/* Tab Content */}
             {activeTab === 'dashboard' && (
               <DashboardSection
@@ -273,10 +303,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
             )}
             {activeTab === 'analytics' && (
               <AnalyticsSection
-                totalRequests={68}
-                completedRequests={45}
-                inProgressRequests={20}
-                contentPosts={15}
+                totalRequests={dashboardStats.totalRequests || moduleRequests.length}
+                completedRequests={dashboardStats.completedRequests || moduleRequests.filter(r => r.status === 'approved').length}
+                inProgressRequests={dashboardStats.pendingRequests || moduleRequests.filter(r => r.status === 'pending').length}
+                contentPosts={blogPosts.length}
                 onExportReport={handleExportReport}
               />
             )}

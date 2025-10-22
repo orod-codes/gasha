@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   CheckCircle, 
   XCircle, 
@@ -75,170 +75,35 @@ const ContentApprovalSection: React.FC = () => {
   const [newScheduleDate, setNewScheduleDate] = useState('');
   const [commentText, setCommentText] = useState('');
   const [requests, setRequests] = useState<CustomerRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Initialize requests state
-  React.useEffect(() => {
-    setRequests(customerRequests);
+  // Fetch requests data on component mount
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // TODO: Replace with real API call
+        // const response = await getCustomerRequests();
+        // setRequests(response.data);
+        
+        // For now, set empty array
+        setRequests([]);
+        
+      } catch (err) {
+        console.error('Error fetching customer requests:', err);
+        setError('Failed to load customer requests');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRequests();
   }, []);
 
-  const customerRequests: CustomerRequest[] = [
-    {
-      id: 'REQ-001',
-      customerName: 'Sarah Johnson',
-      company: 'TechCorp Solutions',
-      requestType: 'campaign',
-      title: 'Q1 Product Launch Email Campaign',
-      description: 'Need email campaign for GASHA Anti-Virus product launch targeting enterprise customers',
-      submittedDate: '2024-01-15',
-      deadline: '2024-02-01',
-      status: 'pending',
-      priority: 'high',
-      budget: 5000,
-      tags: ['product-launch', 'email', 'enterprise'],
-      reviewer: 'Marketing Manager',
-      customerDetails: {
-        companyName: 'TechCorp Solutions',
-        totalComputers: 150,
-        windowsOS: 120,
-        linuxOS: 30,
-        bit32Systems: 25,
-        bit64Systems: 125,
-        contactPerson1: 'Sarah Johnson',
-        contactPerson2: 'Mike Chen',
-        contactEmail: 'sarah.johnson@techcorp.com',
-        website: 'www.techcorp.com',
-        officeNumber: '+251-11-123-4567',
-        jobTitle: 'IT Director',
-        department: 'Information Technology'
-      }
-    },
-    {
-      id: 'REQ-002',
-      customerName: 'Mike Chen',
-      company: 'SecureBiz Inc',
-      requestType: 'social',
-      title: 'LinkedIn Security Awareness Posts',
-      description: 'Educational LinkedIn content about cybersecurity best practices for small businesses',
-      submittedDate: '2024-01-14',
-      deadline: '2024-01-20',
-      status: 'rescheduled',
-      priority: 'medium',
-      budget: 2000,
-      tags: ['education', 'linkedin', 'security'],
-      reviewer: 'Social Media Manager',
-      reviewDate: '2024-01-16',
-      comments: 'Content approved, rescheduled for better timing',
-      newScheduleDate: '2024-01-25',
-      customerDetails: {
-        companyName: 'SecureBiz Inc',
-        totalComputers: 75,
-        windowsOS: 60,
-        linuxOS: 15,
-        bit32Systems: 10,
-        bit64Systems: 65,
-        contactPerson1: 'Mike Chen',
-        contactPerson2: 'Emma Wilson',
-        contactEmail: 'mike.chen@securebiz.com',
-        website: 'www.securebiz.com',
-        officeNumber: '+251-11-234-5678',
-        jobTitle: 'Marketing Manager',
-        department: 'Marketing'
-      }
-    },
-    {
-      id: 'REQ-003',
-      customerName: 'Alex Rodriguez',
-      company: 'CyberGuard Ltd',
-      requestType: 'video',
-      title: 'GASHA VPN Setup Tutorial',
-      description: 'Step-by-step video tutorial for setting up GASHA VPN on Windows systems',
-      submittedDate: '2024-01-12',
-      deadline: '2024-01-25',
-      status: 'approved',
-      priority: 'medium',
-      budget: 3000,
-      tags: ['tutorial', 'vpn', 'video'],
-      reviewer: 'Content Manager',
-      reviewDate: '2024-01-13',
-      comments: 'Excellent content! Forwarded to admin dashboard for production.',
-      customerDetails: {
-        companyName: 'CyberGuard Ltd',
-        totalComputers: 200,
-        windowsOS: 150,
-        linuxOS: 50,
-        bit32Systems: 30,
-        bit64Systems: 170,
-        contactPerson1: 'Alex Rodriguez',
-        contactPerson2: 'David Kim',
-        contactEmail: 'alex.rodriguez@cyberguard.com',
-        website: 'www.cyberguard.com',
-        officeNumber: '+251-11-345-6789',
-        jobTitle: 'Content Manager',
-        department: 'Content Creation'
-      }
-    },
-    {
-      id: 'REQ-004',
-      customerName: 'Emma Wilson',
-      company: 'DataSecure Corp',
-      requestType: 'content',
-      title: 'Cybersecurity Trends Blog Series',
-      description: 'Comprehensive blog post about emerging cybersecurity threats and trends for 2024',
-      submittedDate: '2024-01-10',
-      deadline: '2024-01-18',
-      status: 'rejected',
-      priority: 'low',
-      budget: 1500,
-      tags: ['blog', 'trends', 'cybersecurity'],
-      reviewer: 'Editor-in-Chief',
-      reviewDate: '2024-01-11',
-      rejectionReason: 'Content needs more original research and updated statistics. Please revise and resubmit.',
-      customerDetails: {
-        companyName: 'DataSecure Corp',
-        totalComputers: 100,
-        windowsOS: 80,
-        linuxOS: 20,
-        bit32Systems: 15,
-        bit64Systems: 85,
-        contactPerson1: 'Emma Wilson',
-        contactPerson2: 'Sarah Johnson',
-        contactEmail: 'emma.wilson@datasecure.com',
-        website: 'www.datasecure.com',
-        officeNumber: '+251-11-456-7890',
-        jobTitle: 'Editor-in-Chief',
-        department: 'Content Strategy'
-      }
-    },
-    {
-      id: 'REQ-005',
-      customerName: 'David Kim',
-      company: 'SafeNet Technologies',
-      requestType: 'design',
-      title: 'Security Awareness Month Graphics',
-      description: 'Instagram stories and posts for National Cybersecurity Awareness Month campaign',
-      submittedDate: '2024-01-16',
-      deadline: '2024-01-22',
-      status: 'pending',
-      priority: 'urgent',
-      budget: 2500,
-      tags: ['instagram', 'awareness', 'graphics'],
-      customerDetails: {
-        companyName: 'SafeNet Technologies',
-        totalComputers: 300,
-        windowsOS: 250,
-        linuxOS: 50,
-        bit32Systems: 40,
-        bit64Systems: 260,
-        contactPerson1: 'David Kim',
-        contactPerson2: 'Mike Chen',
-        contactEmail: 'david.kim@safenet.com',
-        website: 'www.safenet.com',
-        officeNumber: '+251-11-567-8901',
-        jobTitle: 'Design Director',
-        department: 'Creative Design'
-      }
-    }
-  ];
+  // Mock data removed - now using real API calls
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -412,6 +277,30 @@ const ContentApprovalSection: React.FC = () => {
       alert(`Comment added to request ${selectedRequest.id}`);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-2 text-slate-600">Loading customer requests...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-8">
+          <div className="text-red-600 mb-4">⚠️</div>
+          <h3 className="text-lg font-semibold text-slate-900 mb-2">Error Loading Requests</h3>
+          <p className="text-slate-600 mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -1,33 +1,31 @@
 const express = require('express');
-const router = express.Router();
+const { authenticateToken } = require('../../middleware/auth');
 const {
-  getAllTasks,
-  getTaskById,
+  getTasks,
+  getTask,
   createTask,
   updateTask,
-  completeTask,
-  getTaskStats,
   deleteTask
 } = require('../../controllers/tasks/taskController');
-const { authenticateToken, authorize } = require('../../middleware/auth');
-const { validateTask, validateId, validatePagination } = require('../../middleware/validation');
+
+const router = express.Router();
 
 // All routes require authentication
 router.use(authenticateToken);
 
-// Get routes
-router.get('/', validatePagination, getAllTasks);
-router.get('/stats', getTaskStats);
-router.get('/:id', validateId, getTaskById);
+// Get all tasks
+router.get('/', getTasks);
 
-// Create task (admin and technical)
-router.post('/', authorize('super-admin', 'admin', 'technical'), validateTask, createTask);
+// Get task by ID
+router.get('/:id', getTask);
 
-// Update task (assigned user, admin, technical)
-router.put('/:id', validateId, updateTask);
-router.put('/:id/complete', validateId, completeTask);
+// Create task
+router.post('/', createTask);
 
-// Delete task (admin only)
-router.delete('/:id', authorize('super-admin', 'admin'), validateId, deleteTask);
+// Update task
+router.put('/:id', updateTask);
+
+// Delete task
+router.delete('/:id', deleteTask);
 
 module.exports = router;

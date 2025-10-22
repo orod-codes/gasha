@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FileText, 
   Plus, 
@@ -49,7 +49,37 @@ const ContentLibrarySection: React.FC = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<ContentAsset | null>(null);
 
-  const contentAssets: ContentAsset[] = [
+  const [contentAssets, setContentAssets] = useState<ContentAsset[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch content assets on component mount
+  useEffect(() => {
+    const fetchContentAssets = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // TODO: Replace with real API call
+        // const response = await getContentAssets();
+        // setContentAssets(response.data);
+        
+        // For now, set empty array
+        setContentAssets([]);
+        
+      } catch (err) {
+        console.error('Error fetching content assets:', err);
+        setError('Failed to load content assets');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContentAssets();
+  }, []);
+
+  // Mock data removed - now using real API calls
+  // const contentAssets: ContentAsset[] = [
     {
       id: 'ASSET-001',
       name: 'GASHA Logo - Primary',

@@ -31,45 +31,15 @@ const ReportsSection: React.FC<ReportsSectionProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="p-6">
           <h4 className="font-semibold text-slate-900 mb-4">Request Analytics</h4>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-slate-600">Total Requests</span>
-              <span className="font-semibold">3,456</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-600">Pending</span>
-              <span className="font-semibold text-orange-600">234</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-600">Approved</span>
-              <span className="font-semibold text-green-600">2,891</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-600">Rejected</span>
-              <span className="font-semibold text-red-600">331</span>
-            </div>
+          <div className="text-center py-8">
+            <p className="text-slate-600">No analytics data available</p>
           </div>
         </Card>
 
         <Card className="p-6">
           <h4 className="font-semibold text-slate-900 mb-4">User Activity</h4>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-slate-600">Active Users</span>
-              <span className="font-semibold">1,247</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-600">New Registrations</span>
-              <span className="font-semibold text-blue-600">89</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-600">Downloads</span>
-              <span className="font-semibold text-purple-600">2,126</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-600">Support Tickets</span>
-              <span className="font-semibold text-orange-600">45</span>
-            </div>
+          <div className="text-center py-8">
+            <p className="text-slate-600">No activity data available</p>
           </div>
         </Card>
       </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Download,
   RefreshCw,
@@ -25,49 +25,34 @@ interface AnalyticsData {
 const AnalyticsSection: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const [selectedMetric, setSelectedMetric] = useState('leads');
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const analyticsData: AnalyticsData[] = [
-    {
-      period: '2024-01-16',
-      leads: 45,
-      conversions: 8,
-      revenue: 672000,
-      emailOpened: 1875,
-      websiteVisits: 1250
-    },
-    {
-      period: '2024-01-15',
-      leads: 38,
-      conversions: 6,
-      revenue: 504000,
-      emailOpened: 1650,
-      websiteVisits: 1100
-    },
-    {
-      period: '2024-01-14',
-      leads: 52,
-      conversions: 12,
-      revenue: 1008000,
-      emailOpened: 2100,
-      websiteVisits: 1400
-    },
-    {
-      period: '2024-01-13',
-      leads: 41,
-      conversions: 7,
-      revenue: 588000,
-      emailOpened: 1800,
-      websiteVisits: 1200
-    },
-    {
-      period: '2024-01-12',
-      leads: 48,
-      conversions: 9,
-      revenue: 756000,
-      emailOpened: 1950,
-      websiteVisits: 1300
-    }
-  ];
+  // Fetch analytics data on component mount
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // TODO: Replace with real API call
+        // const response = await getAnalyticsData(selectedPeriod);
+        // setAnalyticsData(response.data);
+        
+        // For now, set empty array
+        setAnalyticsData([]);
+        
+      } catch (err) {
+        console.error('Error fetching analytics data:', err);
+        setError('Failed to load analytics data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+  }, [selectedPeriod]);
 
   const getTotalStats = () => {
     const totals = analyticsData.reduce((acc, data) => ({
@@ -151,6 +136,30 @@ const AnalyticsSection: React.FC = () => {
     console.log(`Viewing details for ${selectedMetric} in ${selectedPeriod}`);
     alert(`Viewing detailed analytics for ${selectedMetric} in ${selectedPeriod}`);
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-2 text-slate-600">Loading analytics data...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-8">
+          <div className="text-red-600 mb-4">⚠️</div>
+          <h3 className="text-lg font-semibold text-slate-900 mb-2">Error Loading Analytics</h3>
+          <p className="text-slate-600 mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

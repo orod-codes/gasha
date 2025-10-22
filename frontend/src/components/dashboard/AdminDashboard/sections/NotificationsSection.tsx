@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bell, AlertTriangle, CheckCircle, XCircle, Clock, Filter, Search } from 'lucide-react';
 import Card from '../../../ui/Card';
 import Button from '../../../ui/Button';
+import { getNotifications } from '../../../../services/notificationService';
 
 interface Notification {
   id: string;
@@ -27,69 +28,28 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
 }) => {
   const [filter, setFilter] = useState<'all' | 'unread' | 'high'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const notifications: Notification[] = [
-    {
-      id: '1',
-      type: 'warning',
-      title: 'High Server Load Detected',
-      message: 'Server CPU usage has exceeded 85% for the past 10 minutes',
-      timestamp: '2024-01-15 14:30:00',
-      read: false,
-      priority: 'high',
-      category: 'system'
-    },
-    {
-      id: '2',
-      type: 'info',
-      title: 'New Request Submitted',
-      message: 'TechCorp Solutions submitted a request for GASHA Anti-Virus',
-      timestamp: '2024-01-15 13:45:00',
-      read: false,
-      priority: 'medium',
-      category: 'request'
-    },
-    {
-      id: '3',
-      type: 'success',
-      title: 'Backup Completed Successfully',
-      message: 'Daily backup completed successfully. 2.3GB of data backed up.',
-      timestamp: '2024-01-15 12:00:00',
-      read: true,
-      priority: 'low',
-      category: 'system'
-    },
-    {
-      id: '4',
-      type: 'error',
-      title: 'Failed Login Attempt',
-      message: 'Multiple failed login attempts detected from IP 192.168.1.100',
-      timestamp: '2024-01-15 11:15:00',
-      read: false,
-      priority: 'high',
-      category: 'security'
-    },
-    {
-      id: '5',
-      type: 'info',
-      title: 'Team Member Added',
-      message: 'Sarah Johnson has been added to the marketing team',
-      timestamp: '2024-01-15 10:30:00',
-      read: true,
-      priority: 'low',
-      category: 'team'
-    },
-    {
-      id: '6',
-      type: 'warning',
-      title: 'Storage Space Low',
-      message: 'Available storage space is below 20%. Consider cleaning up old files.',
-      timestamp: '2024-01-15 09:45:00',
-      read: false,
-      priority: 'medium',
-      category: 'system'
-    }
-  ];
+  // Fetch notifications on component mount
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getNotifications();
+        setNotifications(data);
+      } catch (err) {
+        console.error('Error fetching notifications:', err);
+        setError('Failed to load notifications');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -136,11 +96,24 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-semibold text-slate-900">Notifications & Alerts</h3>
         <div className="flex space-x-2">
-          <Button variant="outline" onClick={onMarkAllAsRead}>
+          <Button variant="outline" onClick={onMarkAllAsRead} disabled={loading}>
             Mark All as Read
           </Button>
         </div>
       </div>
+
+      {loading && (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-2 text-slate-600">Loading notifications...</span>
+        </div>
+      )}
+
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-700">{error}</p>
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -1,65 +1,65 @@
+const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const pool = require('../src/config/database');
+const connectDB = require('../src/config/database');
+
+// Import models
+const User = require('../src/models/User');
+const Product = require('../src/models/Product');
+const Content = require('../src/models/Content');
+const Notification = require('../src/models/Notification');
 
 async function seedDatabase() {
-  const client = await pool.connect();
-  
   try {
+    // Connect to database
+    await connectDB();
     console.log('🌱 Starting database seeding...');
     
-    // Hash passwords
+    // Clear existing data
+    await User.deleteMany({});
+    await Product.deleteMany({});
+    await Content.deleteMany({});
+    await Notification.deleteMany({});
+    console.log('🧹 Cleared existing data');
+
+    // Hash password
     const hashedPassword = await bcrypt.hash('demo123', 12);
     
-    // Insert default users
+    // Create users
     const users = [
       {
         email: 'superadmin@securityservice.com',
-        password_hash: hashedPassword,
+        password: hashedPassword,
         name: 'Super Administrator',
         role: 'super-admin',
-        module: null
+        modules: [], // Super admin has access to all modules
+        module: null, // Keep for backward compatibility
+        status: 'active'
       },
       {
-        email: 'admin@securityservice.com',
-        password_hash: hashedPassword,
-        name: 'Administrator',
+        email: 'admin-multi@securityservice.com',
+        password: hashedPassword,
+        name: 'Multi-Module Admin',
         role: 'admin',
-        module: 'gasha-antivirus'
+        modules: ['gasha-antivirus', 'nisir'], // Admin with 2 modules
+        module: 'gasha-antivirus', // Keep for backward compatibility
+        status: 'active'
       },
       {
-        email: 'marketing@securityservice.com',
-        password_hash: hashedPassword,
-        name: 'Marketing Specialist',
-        role: 'marketing',
-        module: 'gasha-antivirus'
-      },
-      {
-        email: 'technical@securityservice.com',
-        password_hash: hashedPassword,
-        name: 'Technical Specialist',
-        role: 'technical',
-        module: 'gasha-antivirus'
-      },
-      {
-        email: 'developer@securityservice.com',
-        password_hash: hashedPassword,
-        name: 'Developer',
-        role: 'developer',
-        module: 'gasha-antivirus'
+        email: 'admin-full@securityservice.com',
+        password: hashedPassword,
+        name: 'Full Access Admin',
+        role: 'admin',
+        modules: ['gasha-antivirus', 'nisir', 'enyuma'], // Admin with 3 modules (max)
+        module: 'gasha-antivirus', // Keep for backward compatibility
+        status: 'active'
       }
     ];
-    
+
     console.log('👥 Seeding users...');
-    for (const user of users) {
-      await client.query(
-        `INSERT INTO users (email, password_hash, name, role, module) 
-         VALUES ($1, $2, $3, $4, $5) 
-         ON CONFLICT (email) DO NOTHING`,
-        [user.email, user.password_hash, user.name, user.role, user.module]
-      );
-    }
-    
-    // Insert products
+    const createdUsers = await User.insertMany(users);
+    console.log(`✅ Created ${createdUsers.length} users`);
+
+    // Create products
     const products = [
       {
         name: 'GASHA Anti-Virus',
@@ -72,9 +72,10 @@ async function seedDatabase() {
           'Easy & Hassle-Free - Automatic updates, safe quarantine, and fewer false alarms keep you protected with no extra effort'
         ],
         module: 'gasha',
-        has_download: true,
-        has_request: true,
-        has_show_products: false
+        hasDownload: true,
+        hasRequest: true,
+        hasShowProducts: false,
+        status: 'active'
       },
       {
         name: 'GASHA WAF',
@@ -86,9 +87,10 @@ async function seedDatabase() {
           'Robust Protection - Protect your applications against a wide range of threats'
         ],
         module: 'gasha',
-        has_download: false,
-        has_request: true,
-        has_show_products: false
+        hasDownload: false,
+        hasRequest: true,
+        hasShowProducts: false,
+        status: 'active'
       },
       {
         name: 'GASHA VPN',
@@ -100,9 +102,10 @@ async function seedDatabase() {
           'Comprehensive Reporting and Compliance - Gain actionable insights into your security posture'
         ],
         module: 'gasha',
-        has_download: true,
-        has_request: true,
-        has_show_products: false
+        hasDownload: true,
+        hasRequest: true,
+        hasShowProducts: false,
+        status: 'active'
       },
       {
         name: 'NISIR SIEM',
@@ -115,9 +118,10 @@ async function seedDatabase() {
           'Regulatory Compliance Integration - NISIR supports regulatory compliance by integrating essential frameworks'
         ],
         module: 'nisir',
-        has_download: false,
-        has_request: true,
-        has_show_products: false
+        hasDownload: false,
+        hasRequest: true,
+        hasShowProducts: false,
+        status: 'active'
       },
       {
         name: 'ENYUMA IAM',
@@ -130,9 +134,10 @@ async function seedDatabase() {
           'Multi-Factor Authentication - Requires multiple forms of authentication for added security'
         ],
         module: 'enyuma',
-        has_download: false,
-        has_request: false,
-        has_show_products: true
+        hasDownload: false,
+        hasRequest: false,
+        hasShowProducts: true,
+        status: 'active'
       },
       {
         name: 'CODEPRO Protection',
@@ -145,9 +150,10 @@ async function seedDatabase() {
           'Flexible Engagement Plans - Select from plans designed for all project scales'
         ],
         module: 'codepro',
-        has_download: false,
-        has_request: false,
-        has_show_products: true
+        hasDownload: false,
+        hasRequest: false,
+        hasShowProducts: true,
+        status: 'active'
       },
       {
         name: 'Biometrics ABIS',
@@ -160,61 +166,75 @@ async function seedDatabase() {
           'Deduplication - Once registered, the system compares the person\'s biometric data with existing records'
         ],
         module: 'biometrics',
-        has_download: false,
-        has_request: true,
-        has_show_products: false
+        hasDownload: false,
+        hasRequest: true,
+        hasShowProducts: false,
+        status: 'active'
       }
     ];
-    
+
     console.log('📦 Seeding products...');
-    for (const product of products) {
-      await client.query(
-        `INSERT INTO products (name, category, description, features, module, has_download, has_request, has_show_products) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
-         ON CONFLICT (name) DO NOTHING`,
-        [product.name, product.category, product.description, product.features, product.module, product.has_download, product.has_request, product.has_show_products]
-      );
-    }
-    
-    // Insert sample content
+    const createdProducts = await Product.insertMany(products);
+    console.log(`✅ Created ${createdProducts.length} products`);
+
+    // Create sample content
     const content = [
       {
         title: 'Welcome to Security Service Platform',
         content: 'This is the official blog of Security Service Platform. Here you will find the latest updates, security insights, and product announcements.',
-        author_id: 1,
+        author: createdUsers[0]._id, // Super admin
         type: 'blog',
         scope: 'global',
         status: 'published',
-        published_at: new Date()
+        publishedAt: new Date(),
+        tags: ['welcome', 'announcement'],
+        metaDescription: 'Welcome to the Security Service Platform blog'
       },
       {
         title: 'New GASHA Antivirus Features Released',
         content: 'We are excited to announce new features in GASHA Antivirus including enhanced threat detection and improved performance.',
-        author_id: 1,
+        author: createdUsers[0]._id, // Super admin
         type: 'news',
         scope: 'global',
         status: 'published',
-        published_at: new Date()
+        publishedAt: new Date(),
+        tags: ['gasha', 'antivirus', 'features'],
+        metaDescription: 'New features released for GASHA Antivirus'
       }
     ];
-    
+
     console.log('📝 Seeding content...');
-    for (const item of content) {
-      await client.query(
-        `INSERT INTO content (title, content, author_id, type, scope, status, published_at) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7) 
-         ON CONFLICT DO NOTHING`,
-        [item.title, item.content, item.author_id, item.type, item.scope, item.status, item.published_at]
-      );
-    }
-    
+    const createdContent = await Content.insertMany(content);
+    console.log(`✅ Created ${createdContent.length} content items`);
+
+    // Create sample notifications
+    const notifications = [
+      {
+        user: createdUsers[0]._id, // Super admin user
+        title: 'Welcome to Security Service Platform',
+        message: 'System is ready for configuration',
+        type: 'system',
+        actionUrl: '/dashboard/super-admin'
+      }
+    ];
+
+    console.log('🔔 Seeding notifications...');
+    const createdNotifications = await Notification.insertMany(notifications);
+    console.log(`✅ Created ${createdNotifications.length} notifications`);
+
     console.log('🎉 Database seeding completed successfully!');
-    
+    console.log('\n📋 Demo Users Created:');
+    console.log('Super Admin: superadmin@securityservice.com / demo123 (All Modules)');
+    console.log('Multi-Module Admin: admin-multi@securityservice.com / demo123 (GASHA + NISIR)');
+    console.log('Full Access Admin: admin-full@securityservice.com / demo123 (GASHA + NISIR + ENYUMA)');
+
   } catch (error) {
     console.error('❌ Seeding failed:', error);
     throw error;
   } finally {
-    client.release();
+    // Close connection
+    await mongoose.connection.close();
+    console.log('🔌 Database connection closed');
   }
 }
 

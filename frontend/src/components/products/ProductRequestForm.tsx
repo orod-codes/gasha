@@ -674,19 +674,41 @@ const ProductRequestForm: React.FC<ProductRequestFormProps> = ({
       return renderDownloadForm();
     }
 
-    switch (product.id) {
-      case 'gasha-antivirus':
-      case 'gasha-vpn':
-        return renderGashaAntivirusForm();
-      case 'gasha-waf':
+    // Use product name or category to determine form type
+    const productName = product.name.toLowerCase();
+    const productCategory = product.category.toLowerCase();
+    
+    // Check for GASHA products
+    if (productName.includes('gasha') || productCategory === 'gasha') {
+      if (productName.includes('waf')) {
         return renderGashaWafForm();
-      case 'nisir-siem':
-        return renderGashaAntivirusForm(); // Same form as antivirus
-      case 'biometrics':
-        return renderBiometricsForm();
-      default:
-        return <div>Form not available for this product.</div>;
+      } else {
+        return renderGashaAntivirusForm();
+      }
     }
+    
+    // Check for NISIR products
+    if (productName.includes('nisir') || productCategory === 'nisir') {
+      return renderGashaAntivirusForm(); // Same form as antivirus
+    }
+    
+    // Check for ENYUMA products
+    if (productName.includes('enyuma') || productCategory === 'enyuma') {
+      return renderGashaAntivirusForm(); // Same form as antivirus
+    }
+    
+    // Check for CODEPRO products
+    if (productName.includes('codepro') || productName.includes('code protection') || productCategory === 'codepro') {
+      return renderGashaAntivirusForm(); // Same form as antivirus
+    }
+    
+    // Check for BIOMETRICS products
+    if (productName.includes('biometric') || productCategory === 'biometrics') {
+      return renderBiometricsForm();
+    }
+    
+    // Default form for any other product
+    return renderGashaAntivirusForm();
   };
 
   return (

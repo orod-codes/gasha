@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Users, 
   Mail, 
@@ -36,61 +36,34 @@ const LeadsSection: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [sourceFilter, setSourceFilter] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const leads: Lead[] = [
-    {
-      id: 'LEAD-001',
-      name: 'Sarah Johnson',
-      company: 'TechCorp Solutions',
-      email: 'sarah.johnson@techcorp.com',
-      phone: '+1-555-0123',
-      source: 'Website',
-      status: 'qualified',
-      score: 85,
-      lastContact: '2024-01-15',
-      notes: 'Interested in GASHA Anti-Virus for 50+ workstations',
-      assignedTo: 'Marketing Team'
-    },
-    {
-      id: 'LEAD-002',
-      name: 'Michael Chen',
-      company: 'SecureBank Ltd',
-      email: 'm.chen@securebank.com',
-      phone: '+1-555-0456',
-      source: 'Referral',
-      status: 'contacted',
-      score: 72,
-      lastContact: '2024-01-14',
-      notes: 'Looking for WAF solution, budget approved',
-      assignedTo: 'Marketing Team'
-    },
-    {
-      id: 'LEAD-003',
-      name: 'Emily Rodriguez',
-      company: 'StartupTech Inc',
-      email: 'emily@startuptech.com',
-      phone: '+1-555-0789',
-      source: 'Social Media',
-      status: 'new',
-      score: 45,
-      lastContact: '2024-01-16',
-      notes: 'Small team, interested in VPN solution',
-      assignedTo: 'Marketing Team'
-    },
-    {
-      id: 'LEAD-004',
-      name: 'David Kim',
-      company: 'Enterprise Corp',
-      email: 'david.kim@enterprise.com',
-      phone: '+1-555-0321',
-      source: 'Trade Show',
-      status: 'converted',
-      score: 95,
-      lastContact: '2024-01-10',
-      notes: 'Converted to customer - GASHA Anti-Virus license',
-      assignedTo: 'Sales Team'
-    }
-  ];
+  // Fetch leads data on component mount
+  useEffect(() => {
+    const fetchLeads = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // TODO: Replace with real API call
+        // const response = await getLeads();
+        // setLeads(response.data);
+        
+        // For now, set empty array
+        setLeads([]);
+        
+      } catch (err) {
+        console.error('Error fetching leads:', err);
+        setError('Failed to load leads data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLeads();
+  }, []);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -137,6 +110,30 @@ const LeadsSection: React.FC = () => {
     qualified: leads.filter(l => l.status === 'qualified').length,
     converted: leads.filter(l => l.status === 'converted').length
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-2 text-slate-600">Loading leads data...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-8">
+          <div className="text-red-600 mb-4">⚠️</div>
+          <h3 className="text-lg font-semibold text-slate-900 mb-2">Error Loading Leads</h3>
+          <p className="text-slate-600 mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

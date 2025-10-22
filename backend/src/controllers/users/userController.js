@@ -1,74 +1,20 @@
-const bcrypt = require('bcryptjs');
-const pool = require('../../config/database');
+const User = require('../../models/User');
 
 // Get all users
-const getAllUsers = async (req, res) => {
+const getUsers = async (req, res) => {
   try {
-    const { role, status, page = 1, limit = 10 } = req.query;
-    const offset = (page - 1) * limit;
+    const users = await User.find({}).select('-password').sort({ createdAt: -1 });
     
-    let query = `
-      SELECT id, uuid, email, name, role, module, status, last_login, created_at, updated_at
-      FROM users
-      WHERE 1=1
-    `;
-    
-    const params = [];
-    let paramCount = 0;
-    
-    if (role) {
-      paramCount++;
-      query += ` AND role = $${paramCount}`;
-      params.push(role);
-    }
-    
-    if (status) {
-      paramCount++;
-      query += ` AND status = $${paramCount}`;
-      params.push(status);
-    }
-    
-    query += ` ORDER BY created_at DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
-    params.push(parseInt(limit), offset);
-    
-    const result = await pool.query(query, params);
-    
-    // Get total count
-    let countQuery = `
-      SELECT COUNT(*) as total
-      FROM users
-      WHERE 1=1
-    `;
-    
-    const countParams = [];
-    let countParamCount = 0;
-    
-    if (role) {
-      countParamCount++;
-      countQuery += ` AND role = $${countParamCount}`;
-      countParams.push(role);
-    }
-    
-    if (status) {
-      countParamCount++;
-      countQuery += ` AND status = $${countParamCount}`;
-      countParams.push(status);
-    }
-    
-    const countResult = await pool.query(countQuery, countParams);
-    const total = parseInt(countResult.rows[0].total);
+    console.log(`📋 Retrieved ${users.length} users from database`);
+    users.forEach(user => {
+      console.log(`📋 User: ${user.name} (${user.email}) - Modules:`, user.getActiveModules());
+    });
     
     res.json({
       success: true,
-      data: result.rows,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        pages: Math.ceil(total / limit)
-      }
+      data: users,
+      count: users.length
     });
-    
   } catch (error) {
     console.error('Get users error:', error);
     res.status(500).json({
@@ -79,18 +25,12 @@ const getAllUsers = async (req, res) => {
 };
 
 // Get user by ID
-const getUserById = async (req, res) => {
+const getUser = async (req, res) => {
   try {
     const { id } = req.params;
+    const user = await User.findById(id).select('-password');
     
-    const result = await pool.query(
-      `SELECT id, uuid, email, name, role, module, status, last_login, created_at, updated_at
-       FROM users 
-       WHERE uuid = $1 OR id = $1`,
-      [id]
-    );
-    
-    if (result.rows.length === 0) {
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: 'User not found'
@@ -99,9 +39,8 @@ const getUserById = async (req, res) => {
     
     res.json({
       success: true,
-      data: result.rows[0]
+      data: user
     });
-    
   } catch (error) {
     console.error('Get user error:', error);
     res.status(500).json({
@@ -114,44 +53,48 @@ const getUserById = async (req, res) => {
 // Create user
 const createUser = async (req, res) => {
   try {
-    const { email, password, name, role, module } = req.body;
+    const userData = req.body;
     
-    // Check if user already exists
-    const existingUser = await pool.query(
-      'SELECT id FROM users WHERE email = $1',
-      [email.toLowerCase()]
-    );
-    
-    if (existingUser.rows.length > 0) {
+    // Validate that non-super-admin users have at least one module
+    if (userData.role !== 'super-admin' && (!userData.modules || userData.modules.length === 0)) {
       return res.status(400).json({
         success: false,
-        message: 'User already exists'
+        message: 'Admin users must have at least one module assigned'
       });
     }
     
-    // Hash password
-    const saltRounds = 12;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
+    const user = new User(userData);
+    await user.save();
     
-    // Create user
-    const result = await pool.query(
-      `INSERT INTO users (email, password_hash, name, role, module, status)
-       VALUES ($1, $2, $3, $4, $5, 'active')
-       RETURNING id, uuid, email, name, role, module, status, created_at`,
-      [email.toLowerCase(), passwordHash, name, role, module]
-    );
+    // Remove password from response
+    const userResponse = user.toJSON();
     
     res.status(201).json({
       success: true,
-      message: 'User created successfully',
-      data: result.rows[0]
+      data: userResponse,
+      message: 'User created successfully'
     });
-    
   } catch (error) {
     console.error('Create user error:', error);
+    
+    // Provide more specific error messages
+    let errorMessage = 'Failed to create user';
+    
+    if (error.name === 'ValidationError') {
+      if (error.errors.modules) {
+        errorMessage = error.errors.modules.message;
+      } else if (error.errors.email) {
+        errorMessage = 'Email is already in use';
+      } else {
+        errorMessage = 'Validation error: ' + Object.values(error.errors).map(e => e.message).join(', ');
+      }
+    } else if (error.code === 11000) {
+      errorMessage = 'Email is already in use';
+    }
+    
     res.status(500).json({
       success: false,
-      message: 'Failed to create user'
+      message: errorMessage
     });
   }
 };
@@ -160,78 +103,15 @@ const createUser = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { email, name, role, module, status } = req.body;
+    const updateData = req.body;
     
-    // Check if email is already taken by another user
-    if (email) {
-      const existingUser = await pool.query(
-        'SELECT id FROM users WHERE email = $1 AND id != (SELECT id FROM users WHERE uuid = $2 OR id = $2)',
-        [email.toLowerCase(), id]
-      );
-      
-      if (existingUser.rows.length > 0) {
-        return res.status(400).json({
-          success: false,
-          message: 'Email already taken'
-        });
-      }
-    }
+    const user = await User.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    ).select('-password');
     
-    let updateFields = [];
-    let params = [];
-    let paramCount = 0;
-    
-    if (email) {
-      paramCount++;
-      updateFields.push(`email = $${paramCount}`);
-      params.push(email.toLowerCase());
-    }
-    
-    if (name) {
-      paramCount++;
-      updateFields.push(`name = $${paramCount}`);
-      params.push(name);
-    }
-    
-    if (role) {
-      paramCount++;
-      updateFields.push(`role = $${paramCount}`);
-      params.push(role);
-    }
-    
-    if (module) {
-      paramCount++;
-      updateFields.push(`module = $${paramCount}`);
-      params.push(module);
-    }
-    
-    if (status) {
-      paramCount++;
-      updateFields.push(`status = $${paramCount}`);
-      params.push(status);
-    }
-    
-    if (updateFields.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'No fields to update'
-      });
-    }
-    
-    updateFields.push('updated_at = CURRENT_TIMESTAMP');
-    paramCount++;
-    params.push(id);
-    
-    const query = `
-      UPDATE users 
-      SET ${updateFields.join(', ')}
-      WHERE uuid = $${paramCount} OR id = $${paramCount}
-      RETURNING id, uuid, email, name, role, module, status, updated_at
-    `;
-    
-    const result = await pool.query(query, params);
-    
-    if (result.rows.length === 0) {
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: 'User not found'
@@ -240,10 +120,9 @@ const updateUser = async (req, res) => {
     
     res.json({
       success: true,
-      message: 'User updated successfully',
-      data: result.rows[0]
+      data: user,
+      message: 'User updated successfully'
     });
-    
   } catch (error) {
     console.error('Update user error:', error);
     res.status(500).json({
@@ -257,13 +136,9 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
+    const user = await User.findByIdAndDelete(id);
     
-    const result = await pool.query(
-      'DELETE FROM users WHERE uuid = $1 OR id = $1 RETURNING id, email, name',
-      [id]
-    );
-    
-    if (result.rows.length === 0) {
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: 'User not found'
@@ -272,10 +147,8 @@ const deleteUser = async (req, res) => {
     
     res.json({
       success: true,
-      message: 'User deleted successfully',
-      data: result.rows[0]
+      message: 'User deleted successfully'
     });
-    
   } catch (error) {
     console.error('Delete user error:', error);
     res.status(500).json({
@@ -285,147 +158,175 @@ const deleteUser = async (req, res) => {
   }
 };
 
-// Toggle user status
-const toggleUserStatus = async (req, res) => {
+// Add module to user
+const addUserModule = async (req, res) => {
   try {
     const { id } = req.params;
+    const { module } = req.body;
     
-    const result = await pool.query(
-      `UPDATE users 
-       SET status = CASE 
-         WHEN status = 'active' THEN 'inactive'
-         ELSE 'active'
-       END,
-       updated_at = CURRENT_TIMESTAMP
-       WHERE uuid = $1 OR id = $1
-       RETURNING id, uuid, email, name, status, updated_at`,
-      [id]
-    );
+    console.log(`🔧 Adding module '${module}' to user ${id}`);
     
-    if (result.rows.length === 0) {
+    if (!module) {
+      return res.status(400).json({
+        success: false,
+        message: 'Module name is required'
+      });
+    }
+    
+    const user = await User.findById(id);
+    
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: 'User not found'
       });
     }
     
+    console.log(`📋 User found: ${user.name} (${user.email})`);
+    console.log(`📋 Current modules before add:`, user.getActiveModules());
+    console.log(`📋 Current modules array:`, user.modules);
+    console.log(`📋 Current module field:`, user.module);
+    
+    // Allow super admin to have modules if needed
+    // (Super admin can have 0-3 modules as per business requirements)
+    
+    const success = user.addModule(module);
+    
+    if (!success) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot add module. User may already have this module or reached the maximum of 3 modules'
+      });
+    }
+    
+    console.log(`📋 Modules after add (before save):`, user.getActiveModules());
+    console.log(`📋 Modules array after add:`, user.modules);
+    
+    // Save the user with explicit validation
+    const savedUser = await user.save({ validateBeforeSave: true });
+    
+    console.log(`✅ User saved successfully`);
+    console.log(`📋 Final modules after save:`, savedUser.getActiveModules());
+    console.log(`📋 Final modules array:`, savedUser.modules);
+    
+    // Verify by reloading from database
+    const reloadedUser = await User.findById(id);
+    console.log(`📋 Reloaded user modules:`, reloadedUser.getActiveModules());
+    console.log(`📋 Reloaded modules array:`, reloadedUser.modules);
+    
     res.json({
       success: true,
-      message: `User ${result.rows[0].status === 'active' ? 'activated' : 'deactivated'} successfully`,
-      data: result.rows[0]
+      data: savedUser.toJSON(),
+      message: `Module '${module}' added successfully`
     });
-    
   } catch (error) {
-    console.error('Toggle user status error:', error);
+    console.error('❌ Add user module error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to toggle user status'
+      message: 'Failed to add module to user',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
 
-// Get user statistics
-const getUserStats = async (req, res) => {
-  try {
-    const stats = await pool.query(`
-      SELECT 
-        COUNT(*) as total_users,
-        COUNT(CASE WHEN status = 'active' THEN 1 END) as active_users,
-        COUNT(CASE WHEN status = 'inactive' THEN 1 END) as inactive_users,
-        COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_users,
-        COUNT(CASE WHEN last_login >= CURRENT_DATE - INTERVAL '7 days' THEN 1 END) as recent_logins
-      FROM users
-    `);
-    
-    const roleStats = await pool.query(`
-      SELECT role, COUNT(*) as count
-      FROM users 
-      WHERE status = 'active'
-      GROUP BY role
-      ORDER BY count DESC
-    `);
-    
-    const moduleStats = await pool.query(`
-      SELECT module, COUNT(*) as count
-      FROM users 
-      WHERE status = 'active' AND module IS NOT NULL
-      GROUP BY module
-      ORDER BY count DESC
-    `);
-    
-    const recentUsers = await pool.query(`
-      SELECT id, uuid, email, name, role, created_at
-      FROM users
-      ORDER BY created_at DESC
-      LIMIT 10
-    `);
-    
-    res.json({
-      success: true,
-      data: {
-        overview: stats.rows[0],
-        byRole: roleStats.rows,
-        byModule: moduleStats.rows,
-        recent: recentUsers.rows
-      }
-    });
-    
-  } catch (error) {
-    console.error('Get user stats error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch user statistics'
-    });
-  }
-};
-
-// Reset user password
-const resetUserPassword = async (req, res) => {
+// Remove module from user
+const removeUserModule = async (req, res) => {
   try {
     const { id } = req.params;
-    const { newPassword } = req.body;
+    const { module } = req.body;
     
-    // Hash new password
-    const saltRounds = 12;
-    const passwordHash = await bcrypt.hash(newPassword, saltRounds);
+    console.log(`🔧 Removing module '${module}' from user ${id}`);
     
-    const result = await pool.query(
-      `UPDATE users 
-       SET password_hash = $1, updated_at = CURRENT_TIMESTAMP
-       WHERE uuid = $2 OR id = $2
-       RETURNING id, uuid, email, name`,
-      [passwordHash, id]
-    );
+    if (!module) {
+      return res.status(400).json({
+        success: false,
+        message: 'Module name is required'
+      });
+    }
     
-    if (result.rows.length === 0) {
+    const user = await User.findById(id);
+    
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: 'User not found'
       });
     }
     
+    console.log(`📋 User found: ${user.name} (${user.email})`);
+    console.log(`📋 Current modules before remove:`, user.getActiveModules());
+    
+    // Allow super admin to remove modules if needed
+    
+    const success = user.removeModule(module);
+    
+    if (!success) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot remove module. User must have at least one module assigned'
+      });
+    }
+    
+    console.log(`📋 Modules after remove (before save):`, user.getActiveModules());
+    
+    // Save the user with explicit validation
+    const savedUser = await user.save({ validateBeforeSave: true });
+    
+    console.log(`✅ User saved successfully`);
+    console.log(`📋 Final modules after save:`, savedUser.getActiveModules());
+    
+    // Verify by reloading from database
+    const reloadedUser = await User.findById(id);
+    console.log(`📋 Reloaded user modules:`, reloadedUser.getActiveModules());
+    
     res.json({
       success: true,
-      message: 'Password reset successfully',
-      data: result.rows[0]
+      data: savedUser.toJSON(),
+      message: `Module '${module}' removed successfully`
     });
-    
   } catch (error) {
-    console.error('Reset user password error:', error);
+    console.error('❌ Remove user module error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to reset user password'
+      message: 'Failed to remove module from user',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+// Get users by module
+const getUsersByModule = async (req, res) => {
+  try {
+    const { module } = req.params;
+    
+    const users = await User.find({
+      $or: [
+        { modules: module },
+        { module: module } // For backward compatibility
+      ]
+    }).select('-password').sort({ createdAt: -1 });
+    
+    res.json({
+      success: true,
+      data: users,
+      count: users.length
+    });
+  } catch (error) {
+    console.error('Get users by module error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch users by module'
     });
   }
 };
 
 module.exports = {
-  getAllUsers,
-  getUserById,
+  getUsers,
+  getUser,
   createUser,
   updateUser,
   deleteUser,
-  toggleUserStatus,
-  getUserStats,
-  resetUserPassword
+  addUserModule,
+  removeUserModule,
+  getUsersByModule
 };

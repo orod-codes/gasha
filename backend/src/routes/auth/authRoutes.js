@@ -1,5 +1,6 @@
 const express = require('express');
-const router = express.Router();
+const { body } = require('express-validator');
+const { authenticateToken } = require('../../middleware/auth');
 const {
   login,
   register,
@@ -9,22 +10,70 @@ const {
   logout,
   verifyToken
 } = require('../../controllers/auth/authController');
-const { authenticateToken, authorize } = require('../../middleware/auth');
-const { validateLogin, validateUser } = require('../../middleware/validation');
+
+const router = express.Router();
+
+// Validation middleware
+const loginValidation = [
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Valid email is required'),
+  body('password')
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters')
+];
+
+const registerValidation = [
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Valid email is required'),
+  body('password')
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters'),
+  body('name')
+    .trim()
+    .isLength({ min: 2 })
+    .withMessage('Name must be at least 2 characters'),
+  body('role')
+    .isIn(['super-admin', 'admin', 'marketing', 'technical', 'developer'])
+    .withMessage('Invalid role')
+];
+
+const updateProfileValidation = [
+  body('name')
+    .optional()
+    .trim()
+    .isLength({ min: 2 })
+    .withMessage('Name must be at least 2 characters'),
+  body('email')
+    .optional()
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Valid email is required')
+];
+
+const changePasswordValidation = [
+  body('currentPassword')
+    .notEmpty()
+    .withMessage('Current password is required'),
+  body('newPassword')
+    .isLength({ min: 6 })
+    .withMessage('New password must be at least 6 characters')
+];
 
 // Public routes
-router.post('/login', validateLogin, login);
-router.post('/logout', logout);
+router.post('/login', loginValidation, login);
+router.post('/register', registerValidation, register);
 
 // Protected routes
-router.use(authenticateToken); // All routes below require authentication
+router.use(authenticateToken);
 
 router.get('/profile', getProfile);
+router.put('/profile', updateProfileValidation, updateProfile);
+router.put('/change-password', changePasswordValidation, changePassword);
+router.post('/logout', logout);
 router.get('/verify', verifyToken);
-router.put('/profile', updateProfile);
-router.put('/change-password', changePassword);
-
-// Admin only routes
-router.post('/register', authorize('super-admin', 'admin'), validateUser, register);
 
 module.exports = router;

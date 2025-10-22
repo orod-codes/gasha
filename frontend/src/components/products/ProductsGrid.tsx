@@ -1,8 +1,64 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import ProductCard from './ProductCard';
-import { products } from '../../data/products';
+import { getProducts } from '../../services/productService';
+import { Product } from '../../types';
 
 const ProductsGrid: React.FC = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const productsData = await getProducts();
+        setProducts(productsData);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError('Failed to load products');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (loading) {
+    return (
+      <section id="products" className="py-24 bg-gradient-to-br from-black via-slate-950 to-black relative overflow-hidden">
+        <div className="relative max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="inline-flex items-center px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-500/15 to-cyan-500/15 border border-blue-400/25 text-blue-200 text-sm font-semibold mb-12 backdrop-blur-md shadow-lg shadow-blue-500/10">
+              <div className="w-2 h-2 bg-blue-400 rounded-full mr-3 animate-pulse"></div>
+              Loading Products...
+            </div>
+            <div className="flex justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section id="products" className="py-24 bg-gradient-to-br from-black via-slate-950 to-black relative overflow-hidden">
+        <div className="relative max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="inline-flex items-center px-8 py-4 rounded-2xl bg-gradient-to-r from-red-500/15 to-red-500/15 border border-red-400/25 text-red-200 text-sm font-semibold mb-12 backdrop-blur-md shadow-lg shadow-red-500/10">
+              <div className="w-2 h-2 bg-red-400 rounded-full mr-3"></div>
+              Error: {error}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="products" className="py-24 bg-gradient-to-br from-black via-slate-950 to-black relative overflow-hidden">
       {/* Modern Animated Background */}

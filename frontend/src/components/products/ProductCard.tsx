@@ -5,6 +5,7 @@ import Button from '../ui/Button';
 import ProductModal from './ProductModal';
 import ProductRequestForm from './ProductRequestForm';
 import { Product } from '../../types';
+import { createRequest } from '../../services/requestService';
 
 interface ProductCardProps {
   product: Product;
@@ -38,9 +39,37 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     return '/mian logo.png'; // Default logo
   };
 
-  const handleRequestSubmit = (formData: any) => {
-    console.log('Request submitted:', formData);
-    alert('Request submitted successfully! You will be contacted soon.');
+  const handleRequestSubmit = async (formData: any) => {
+    try {
+      console.log('Request submitted:', formData);
+      
+      // Prepare request data
+      const requestData = {
+        productId: product.id,
+        status: 'pending',
+        formData: formData,
+        // Add any additional fields from the form
+        companyName: formData.companyName || '',
+        contactPerson: formData.contactPerson || '',
+        email: formData.email || '',
+        phone: formData.phone || '',
+        priority: formData.priority || 'medium'
+      };
+
+      // Submit to backend
+      const result = await createRequest(requestData);
+      
+      if (result.success) {
+        alert('Request submitted successfully! You will be contacted soon.');
+        console.log('Request created:', result.request);
+      } else {
+        alert('Failed to submit request. Please try again.');
+        console.error('Request submission failed:', result.error);
+      }
+    } catch (error) {
+      console.error('Error submitting request:', error);
+      alert('An error occurred while submitting your request. Please try again.');
+    }
   };
 
   const getActionButtons = () => {

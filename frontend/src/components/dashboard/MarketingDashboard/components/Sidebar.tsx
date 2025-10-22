@@ -16,7 +16,8 @@ import {
   Settings,
   TrendingUp,
   Mail,
-  Share2
+  Share2,
+  Bell
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -30,6 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, color: 'blue', badge: null },
+    { id: 'notifications', label: 'Request Alerts', icon: Bell, color: 'red', badge: 'New' },
     { id: 'approvals', label: 'Content Approval', icon: CheckCircle, color: 'pink', badge: '5' },
     // { id: 'leads', label: 'Lead Management', icon: Users, color: 'emerald', badge: '12' },
     { id: 'calendar', label: 'Content Calendar', icon: Calendar, color: 'orange', badge: '3' },
@@ -48,9 +50,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
         purple: 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg',
         indigo: 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg',
         orange: 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg',
+        red: 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg',
         pink: 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg',
         teal: 'bg-gradient-to-r from-teal-500 to-teal-600 text-white shadow-lg',
-        red: 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg',
         gray: 'bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg',
         yellow: 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-lg'
       };

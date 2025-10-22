@@ -3,7 +3,8 @@ export interface User {
   email: string;
   name: string;
   role: 'super-admin' | 'admin' | 'marketing' | 'technical' | 'developer';
-  module?: string;
+  module?: string; // Keep for backward compatibility
+  modules?: string[]; // New modules array
   createdAt: string;
 }
 
@@ -117,4 +118,30 @@ export interface ChatbotState {
   messages: ChatMessage[];
   isTyping: boolean;
   currentContext?: string;
+}
+
+export interface Notification {
+  id: string;
+  user: string;
+  title: string;
+  message: string;
+  type: 'content' | 'campaign' | 'approval' | 'urgent' | 'system' | 'task' | 'deployment' | 'request';
+  isRead: boolean;
+  actionUrl?: string;
+  metadata?: Record<string, any>;
+  data?: Record<string, any>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Module {
+  _id: string;
+  name: string;
+  displayName: string;
+  description: string;
+  logo: string;
+  status: 'active' | 'inactive' | 'maintenance';
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
 }

@@ -35,12 +35,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
     { id: 'admin', label: 'Admin Management', icon: Users, color: 'purple', badge: '12' },
     { id: 'blog', label: 'Blog Management', icon: FileText, color: 'orange', badge: null },
     { id: 'reports', label: 'Reports', icon: TrendingUp, color: 'green', badge: null },
-    { id: 'system', label: 'System Health', icon: Monitor, color: 'teal', badge: null },
-    { id: 'security', label: 'Security Center', icon: Lock, color: 'indigo', badge: '3' },
     { id: 'analytics', label: 'Advanced Analytics', icon: Activity, color: 'pink', badge: 'New' },
-    { id: 'global', label: 'Global Settings', icon: Globe, color: 'yellow', badge: null },
-    { id: 'database', label: 'Database Admin', icon: Database, color: 'emerald', badge: null },
-    { id: 'notifications', label: 'Notifications', icon: Bell, color: 'rose', badge: '8' },
+  
     { id: 'settings', label: 'Settings', icon: Settings, color: 'gray', badge: null }
   ];
 
@@ -172,7 +168,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
       <div className="p-4 border-t border-slate-200 bg-gradient-to-r from-slate-50 to-white">
         {!isCollapsed ? (
           <div className="text-center">
-            <img src="/mian logo.png" alt="Super Admin Logo" className="w-8 h-8 object-contain mx-auto mb-2" />
+            <img src="/mian logo.png" alt="Super Admin Logo" className="w-8 h-10 object-contain mx-auto mb-2" />
             <p className="text-xs text-slate-600 font-medium">Super Admin Portal</p>
             <p className="text-xs text-slate-500">Version 2.1.0 Enterprise</p>
             <div className="mt-2 flex items-center justify-center space-x-2">

@@ -37,12 +37,7 @@ const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
   onRefreshSystem,
   onGenerateReport
 }) => {
-  const [recentActions] = useState([
-    { id: 1, action: 'Created new request', user: 'John Doe', time: '2 min ago', icon: FileText, color: 'blue' },
-    { id: 2, action: 'Added team member', user: 'Sarah Smith', time: '5 min ago', icon: Users, color: 'green' },
-    { id: 3, action: 'Generated report', user: 'Mike Chen', time: '10 min ago', icon: BarChart3, color: 'purple' },
-    { id: 4, action: 'System backup', user: 'System', time: '15 min ago', icon: RefreshCw, color: 'orange' }
-  ]);
+  const [recentActions] = useState<any[]>([]);
 
   const quickActions = [
     {
